@@ -167,8 +167,8 @@
     <section class="view active" id="view-map">
       <div class="card">
         <h2><span class="num">1</span>危険エリアの確認</h2>
-        <p class="note">国土数値情報「土砂災害警戒区域データ」（東京都・GeoJSON形式）と同じ属性構成のサンプルで表示しています。</p>
-        <div class="note mock">⚠ これはサンプルデータです。実際の境界線ではありません。本番では国交省の実データ（A33-20_13_GML.zip）に差し替えます。</div>
+        <p class="note">国土数値情報「土砂災害警戒区域データ」（東京都・令和4年度版）を使用しています。</p>
+        <div class="note mock" id="dataSourceNote">⚠ データを読み込み中です…</div>
         <div id="map"></div>
         <div class="legend">
           <span><i style="background:#b3352a"></i>特別警戒区域</span>
@@ -287,8 +287,9 @@
     alert('現場全員に共有しました（プロトタイプ動作：実際の通知はCloudflare Workers経由で実装）');
   });
 
-  // ---- 地図：国土数値情報と同じ属性スキーマのサンプルGeoJSON ----
-  // 実データ差し替え時：A33-20_13_GML.zip を GeoJSON変換したファイルをそのままここに読み込ませる
+  // ---- 地図：実データが読み込めない場合のフォールバック用サンプルGeoJSON ----
+  // 実データは data/tokyo_23wards_sabo_zones.geojson を fetch で読み込む（下記参照）。
+  // file:// で直接開いた場合など fetch が失敗する環境向けの最小限のダミーデータ。
   const sampleGeoJSON = {
     "type":"FeatureCollection",
     "features":[
@@ -348,24 +349,43 @@
   }
 
   const zoneInfo = document.getElementById('zoneInfo');
+  const dataSourceNote = document.getElementById('dataSourceNote');
 
-  L.geoJSON(sampleGeoJSON, {
-    style: styleFor,
-    onEachFeature: (feature, layer) => {
-      layer.on('click', () => {
-        const p = feature.properties;
-        const isSpecial = p['区域区分'] === '土砂災害特別警戒区域';
-        zoneInfo.className = 'zone-info show ' + (isSpecial ? 'danger' : 'warn');
-        zoneInfo.innerHTML = `
-          <dl style="margin:0">
-            <dt>区分</dt><dd>${p['区域区分']}</dd><br>
-            <dt>現象</dt><dd>${p['現象の種類']}</dd><br>
-            <dt>所在地</dt><dd>${p['所在地']}</dd><br>
-            <dt>告示日</dt><dd>${p['告示日']}</dd>
-          </dl>`;
-      });
-    }
-  }).addTo(map);
+  function renderZones(geojson){
+    L.geoJSON(geojson, {
+      style: styleFor,
+      onEachFeature: (feature, layer) => {
+        layer.on('click', () => {
+          const p = feature.properties;
+          const isSpecial = p['区域区分'] === '土砂災害特別警戒区域';
+          zoneInfo.className = 'zone-info show ' + (isSpecial ? 'danger' : 'warn');
+          zoneInfo.innerHTML = `
+            <dl style="margin:0">
+              <dt>区分</dt><dd>${p['区域区分']}</dd><br>
+              <dt>現象</dt><dd>${p['現象の種類']}</dd><br>
+              <dt>所在地</dt><dd>${p['所在地']}</dd><br>
+              <dt>告示日</dt><dd>${p['告示日']}</dd>
+            </dl>`;
+        });
+      }
+    }).addTo(map);
+  }
+
+  // 実データ（国土数値情報 A33-22、東京都23区、簡略化済み・約880KB）を読み込む。
+  // file:// で直接開くとブラウザのCORS制限でfetchが失敗するため、その場合は
+  // サンプルデータにフォールバックする（http(s)経由で配信すれば実データが表示される）。
+  fetch('data/tokyo_23wards_sabo_zones.geojson')
+    .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    .then(geojson => {
+      renderZones(geojson);
+      dataSourceNote.className = 'note mock';
+      dataSourceNote.innerHTML = `✅ 実データを表示中：国土数値情報「土砂災害警戒区域データ」A33-22（東京都・令和4年度版）、23区内 ${geojson.features.length}件。座標は簡略化済み（元データ34MB→約880KB）。`;
+    })
+    .catch(err => {
+      console.warn('実データの読み込みに失敗、サンプルデータを表示します:', err);
+      renderZones(sampleGeoJSON);
+      dataSourceNote.innerHTML = '⚠ 実データを読み込めなかったためサンプルデータを表示しています（file://で直接開くとfetchがCORSでブロックされます。ローカルサーバー等http(s)経由で開いてください）。';
+    });
 
 </script>
 </body>

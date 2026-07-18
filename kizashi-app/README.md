@@ -52,8 +52,11 @@
 kizashi-app/
 ├── README.md          このファイル
 ├── docs/
-│   └── 企画整理.md     企画の全体像・要件定義
+│   └── 企画整理.md     企画の全体像・要件定義（技術検証結果も記載）
 ├── prototype/          UIプロトタイプ（Leaflet.js + 国土地理院タイル）
+│   ├── doshasai-prototype.html
+│   └── data/           実データ（国土数値情報 土砂災害警戒区域、23区・簡略化済み）
+├── tools/              データ変換スクリプト（GML/GeoJSON → プロトタイプ用GeoJSON）
 └── src/                実装コード（今後追加）
 ```
 

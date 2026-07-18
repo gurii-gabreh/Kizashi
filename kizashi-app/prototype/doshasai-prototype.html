@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>きざし｜土砂災害現場支援 プロトタイプ</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c2126;
+    --ink-soft:#4b545c;
+    --paper:#f4f5f3;
+    --panel:#ffffff;
+    --line:#dcdfdc;
+    --action:#1f4e4a;
+    --action-dark:#163936;
+    --danger:#b3352a;
+    --danger-bg:#fbe9e7;
+    --warn:#c98a1f;
+    --warn-bg:#fdf3e0;
+    --safe:#2f6b52;
+    --safe-bg:#e8f2ec;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:"Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--paper);display:flex;flex-direction:column;}
+
+  header.top{
+    padding:18px 18px 14px;
+    background:var(--action);
+    color:#fff;
+    position:sticky;top:0;z-index:1000;
+  }
+  header.top .eyebrow{
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    opacity:.72;font-weight:700;margin-bottom:4px;
+  }
+  header.top h1{margin:0;font-size:19px;font-weight:900;letter-spacing:.01em;}
+  header.top .room-tag{
+    display:inline-flex;align-items:center;gap:6px;
+    margin-top:10px;padding:6px 10px;border-radius:999px;
+    background:rgba(255,255,255,.14);font-size:12.5px;font-weight:500;
+  }
+  header.top .room-tag b{font-weight:900;letter-spacing:.06em;}
+
+  main{flex:1;padding:16px 16px 96px;}
+
+  .card{
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:var(--radius);padding:16px;margin-bottom:14px;
+  }
+  .card h2{
+    margin:0 0 10px;font-size:15px;font-weight:900;
+    display:flex;align-items:center;gap:8px;
+  }
+  .card h2 .num{
+    width:22px;height:22px;border-radius:7px;background:var(--action);
+    color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .note{font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin:0 0 10px;}
+  .note.mock{
+    background:#fff8e1;border:1px solid #e8d48a;color:#6b5a15;
+    padding:8px 10px;border-radius:8px;font-size:11.5px;
+  }
+
+  #map{
+    width:100%;height:280px;border-radius:10px;overflow:hidden;
+    border:1px solid var(--line);
+  }
+  .legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;}
+  .legend span{font-size:11.5px;display:flex;align-items:center;gap:5px;color:var(--ink-soft);}
+  .legend i{width:11px;height:11px;border-radius:3px;display:inline-block;}
+
+  .zone-info{
+    margin-top:10px;padding:12px;border-radius:10px;font-size:13px;line-height:1.7;
+    display:none;
+  }
+  .zone-info.show{display:block;}
+  .zone-info.danger{background:var(--danger-bg);color:#7a251c;}
+  .zone-info.warn{background:var(--warn-bg);color:#7a5c14;}
+  .zone-info dt{font-weight:700;display:inline;}
+  .zone-info dd{display:inline;margin:0 10px 0 4px;}
+
+  .big-btn{
+    width:100%;padding:16px;border:none;border-radius:12px;
+    background:var(--action);color:#fff;font-size:15.5px;font-weight:700;
+    font-family:inherit;cursor:pointer;
+  }
+  .big-btn:active{background:var(--action-dark);}
+  .big-btn.outline{background:#fff;color:var(--action);border:1.5px solid var(--action);}
+  .big-btn.danger-btn{background:var(--danger);}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  .field{margin-bottom:12px;}
+  .field label{
+    display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);
+    margin-bottom:5px;
+  }
+  .field input, .field select, .field textarea{
+    width:100%;padding:11px 12px;border:1.5px solid var(--line);
+    border-radius:9px;font-size:14.5px;font-family:inherit;background:#fff;color:var(--ink);
+  }
+  .field textarea{resize:vertical;min-height:60px;}
+  .field.optional label::after{content:"（任意）";font-weight:400;color:#9aa1a6;}
+
+  .precursor-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .precursor-item{
+    border:1.5px solid var(--line);border-radius:10px;padding:12px 10px;
+    text-align:center;font-size:12.5px;line-height:1.4;cursor:pointer;
+    background:#fff;color:var(--ink-soft);font-weight:500;
+  }
+  .precursor-item.active{
+    border-color:var(--danger);background:var(--danger-bg);color:#7a251c;font-weight:700;
+  }
+
+  .feed-item{
+    border-left:3px solid var(--action);padding:8px 0 8px 12px;margin-bottom:10px;font-size:13px;
+  }
+  .feed-item .meta{font-size:11px;color:#9aa1a6;margin-top:2px;}
+
+  nav.tabs{
+    position:fixed;bottom:0;left:0;right:0;
+    background:#fff;border-top:1px solid var(--line);
+    display:flex;max-width:520px;margin:0 auto;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  nav.tabs button{
+    flex:1;border:none;background:none;padding:10px 4px 8px;
+    font-family:inherit;font-size:10.5px;font-weight:700;color:#9aa1a6;
+    display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;
+  }
+  nav.tabs button .ico{font-size:18px;}
+  nav.tabs button.active{color:var(--action);}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .status-pill{
+    display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;
+  }
+  .status-pill.ok{background:var(--safe-bg);color:var(--safe);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div class="eyebrow">Prototype / 技術検証用</div>
+    <h1>きざし</h1>
+    <div class="room-tag">現場ルーム <b id="roomCode">483920</b></div>
+  </header>
+
+  <main>
+
+    <!-- ============ 地図タブ ============ -->
+    <section class="view active" id="view-map">
+      <div class="card">
+        <h2><span class="num">1</span>危険エリアの確認</h2>
+        <p class="note">国土数値情報「土砂災害警戒区域データ」（東京都・GeoJSON形式）と同じ属性構成のサンプルで表示しています。</p>
+        <div class="note mock">⚠ これはサンプルデータです。実際の境界線ではありません。本番では国交省の実データ（A33-20_13_GML.zip）に差し替えます。</div>
+        <div id="map"></div>
+        <div class="legend">
+          <span><i style="background:#b3352a"></i>特別警戒区域</span>
+          <span><i style="background:#c98a1f"></i>警戒区域</span>
+          <span><i style="background:#2f6b52"></i>待機可能</span>
+        </div>
+        <div class="zone-info" id="zoneInfo"></div>
+      </div>
+
+      <div class="card">
+        <h2><span class="num">2</span>気象警報の状況</h2>
+        <p class="note">気象庁防災情報XMLと同形式のサンプル表示。本番ではCloudflare Workers経由で定期取得します。</p>
+        <div class="feed-item">
+          <span class="status-pill ok">現在：発表なし</span>
+          <div class="meta">大雨警報（土砂災害）／土砂災害警戒情報　最終確認：サンプル表示</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 問診タブ ============ -->
+    <section class="view" id="view-intake">
+      <div class="card">
+        <h2><span class="num">3</span>事前問診フォーム</h2>
+        <p class="note">警察の「行方不明者届」標準項目に準拠。届出時に慌てず答えられるよう、事前に整理しておく下書きです。</p>
+
+        <div class="field"><label>氏名</label><input type="text" placeholder="山田 太郎"></div>
+        <div class="grid2">
+          <div class="field"><label>年齢</label><input type="text" placeholder="72"></div>
+          <div class="field"><label>性別</label><select><option>未選択</option><option>男性</option><option>女性</option></select></div>
+        </div>
+        <div class="field"><label>最後に確認された場所・時刻</label><input type="text" placeholder="例：〇〇町2丁目付近、7/18 18:30頃"></div>
+
+        <div class="field"><label>身長・体格</label><input type="text" placeholder="例：165cm、やせ型"></div>
+        <div class="field"><label>髪型・髪の色</label><input type="text" placeholder="例：白髪、短髪"></div>
+        <div class="field optional"><label>眼鏡の有無</label><input type="text" placeholder="例：黒縁眼鏡を着用"></div>
+        <div class="field"><label>最後に確認された時の服装</label><textarea placeholder="例：グレーのジャケット、紺のズボン"></textarea></div>
+
+        <div class="field optional"><label>現在服用中の薬・アレルギー</label><textarea placeholder="捜索・救助に直接必要な範囲のみ"></textarea></div>
+        <div class="field optional"><label>歩行・移動の可否</label><input type="text" placeholder="例：杖を使用、自力歩行可"></div>
+        <div class="field optional"><label>最近の写真</label><input type="file" accept="image/*"></div>
+
+        <button class="big-btn">この内容を現場ルームに保存</button>
+        <p class="note" style="margin-top:10px">保存内容は暗号化され、現場ルームコードを知る人のみ閲覧できます。事案終了後30日で自動削除されます。</p>
+      </div>
+    </section>
+
+    <!-- ============ 前兆報告タブ ============ -->
+    <section class="view" id="view-precursor">
+      <div class="card">
+        <h2><span class="num">4</span>前兆現象の報告</h2>
+        <p class="note">国土交通省・首相官邸が公式に定める前兆現象チェックリストです。気づいたものをタップしてください（予測ではなく、目撃情報の共有です）。</p>
+        <div class="precursor-grid" id="precursorGrid">
+          <div class="precursor-item" data-label="がけの割れ目・ひび割れ">がけの割れ目<br>・ひび割れ</div>
+          <div class="precursor-item" data-label="がけからの湧き水">がけからの<br>湧き水</div>
+          <div class="precursor-item" data-label="川の急な濁り・流木">川の急な濁り<br>・流木</div>
+          <div class="precursor-item" data-label="川の水位の急な低下">川の水位の<br>急な低下</div>
+          <div class="precursor-item" data-label="山鳴り・地鳴り">山鳴り<br>・地鳴り</div>
+          <div class="precursor-item" data-label="小石が落ちてくる">小石が<br>落ちてくる</div>
+          <div class="precursor-item" data-label="異臭がする">異臭が<br>する</div>
+          <div class="precursor-item" data-label="樹木が傾く・裂ける音">樹木が傾く<br>・裂ける音</div>
+        </div>
+        <button class="big-btn danger-btn" style="margin-top:14px" id="reportBtn">この内容を現場全員に共有</button>
+      </div>
+
+      <div class="card">
+        <h2><span class="num">5</span>報告・確認の記録</h2>
+        <p class="note">誰が・どこを・いつ確認したかを共有します。口頭・紙での伝言による遅延や誤伝達を防ぎます。</p>
+        <div id="feedList">
+          <div class="feed-item">
+            <div>スタッフA：北側斜面を確認、異常なし</div>
+            <div class="meta">14:32（サンプル）</div>
+          </div>
+        </div>
+        <button class="big-btn outline">確認記録を追加</button>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="tabs">
+    <button class="active" data-view="view-map"><span class="ico">🗺️</span>地図</button>
+    <button data-view="view-intake"><span class="ico">📋</span>事前問診</button>
+    <button data-view="view-precursor"><span class="ico">⚠️</span>前兆報告</button>
+  </nav>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+  // ---- タブ切り替え ----
+  document.querySelectorAll('nav.tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.view).classList.add('active');
+      if(btn.dataset.view==='view-map' && window.map){ setTimeout(()=>window.map.invalidateSize(), 50); }
+    });
+  });
+
+  // ---- 前兆現象チップ ----
+  document.querySelectorAll('.precursor-item').forEach(item=>{
+    item.addEventListener('click', ()=> item.classList.toggle('active'));
+  });
+  document.getElementById('reportBtn').addEventListener('click', ()=>{
+    const picked = [...document.querySelectorAll('.precursor-item.active')].map(i=>i.dataset.label);
+    if(picked.length===0){ alert('気づいた項目をタップしてから共有してください'); return; }
+    const feed = document.getElementById('feedList');
+    const div = document.createElement('div');
+    div.className='feed-item';
+    div.style.borderLeftColor = 'var(--danger)';
+    div.innerHTML = `<div><b>前兆現象の報告：</b>${picked.join('、')}</div><div class="meta">${new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}・現在地付近</div>`;
+    feed.prepend(div);
+    document.querySelectorAll('.precursor-item.active').forEach(i=>i.classList.remove('active'));
+    document.querySelector('[data-view="view-precursor"]').click();
+    alert('現場全員に共有しました（プロトタイプ動作：実際の通知はCloudflare Workers経由で実装）');
+  });
+
+  // ---- 地図：国土数値情報と同じ属性スキーマのサンプルGeoJSON ----
+  // 実データ差し替え時：A33-20_13_GML.zip を GeoJSON変換したファイルをそのままここに読み込ませる
+  const sampleGeoJSON = {
+    "type":"FeatureCollection",
+    "features":[
+      {
+        "type":"Feature",
+        "properties":{
+          "現象の種類":"急傾斜地の崩壊",
+          "区域区分":"土砂災害特別警戒区域",
+          "区域名":"サンプル区域A（品川区想定）",
+          "所在地":"品川区某所",
+          "告示日":"2025-03-19"
+        },
+        "geometry":{"type":"Polygon","coordinates":[[[139.730,35.610],[139.734,35.610],[139.734,35.613],[139.730,35.613],[139.730,35.610]]]}
+      },
+      {
+        "type":"Feature",
+        "properties":{
+          "現象の種類":"土石流",
+          "区域区分":"土砂災害警戒区域",
+          "区域名":"サンプル区域B（世田谷区想定）",
+          "所在地":"世田谷区某所",
+          "告示日":"2024-11-02"
+        },
+        "geometry":{"type":"Polygon","coordinates":[[[139.640,35.630],[139.646,35.630],[139.646,35.634],[139.640,35.634],[139.640,35.630]]]}
+      },
+      {
+        "type":"Feature",
+        "properties":{
+          "現象の種類":"地すべり",
+          "区域区分":"土砂災害特別警戒区域",
+          "区域名":"サンプル区域C（港区赤坂想定）",
+          "所在地":"港区赤坂",
+          "告示日":"2026-06-24"
+        },
+        "geometry":{"type":"Polygon","coordinates":[[[139.735,35.670],[139.740,35.670],[139.740,35.673],[139.735,35.673],[139.735,35.670]]]}
+      }
+    ]
+  };
+
+  const map = L.map('map', {zoomControl:true, attributionControl:true}).setView([35.65, 139.70], 11);
+  window.map = map;
+
+  // 国土地理院タイル（無料・APIキー不要）
+  L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+    attribution: '地図：国土地理院',
+    maxZoom: 18
+  }).addTo(map);
+
+  function styleFor(f){
+    const isSpecial = f.properties['区域区分'] === '土砂災害特別警戒区域';
+    return {
+      color: isSpecial ? '#b3352a' : '#c98a1f',
+      weight: 1.5,
+      fillColor: isSpecial ? '#b3352a' : '#c98a1f',
+      fillOpacity: 0.35
+    };
+  }
+
+  const zoneInfo = document.getElementById('zoneInfo');
+
+  L.geoJSON(sampleGeoJSON, {
+    style: styleFor,
+    onEachFeature: (feature, layer) => {
+      layer.on('click', () => {
+        const p = feature.properties;
+        const isSpecial = p['区域区分'] === '土砂災害特別警戒区域';
+        zoneInfo.className = 'zone-info show ' + (isSpecial ? 'danger' : 'warn');
+        zoneInfo.innerHTML = `
+          <dl style="margin:0">
+            <dt>区分</dt><dd>${p['区域区分']}</dd><br>
+            <dt>現象</dt><dd>${p['現象の種類']}</dd><br>
+            <dt>所在地</dt><dd>${p['所在地']}</dd><br>
+            <dt>告示日</dt><dd>${p['告示日']}</dd>
+          </dl>`;
+      });
+    }
+  }).addTo(map);
+
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# ローカル開発用の環境変数。実際の値を入れた .dev.vars ファイル（gitignore対象）を
+# このファイルと同じ場所に作成すること。 .dev.vars.example 自体はコミットしてよい
+# （実際の鍵の値は含まれていない）。
+#
+# 生成方法（AES-256用の32バイトをbase64化）:
+#   openssl rand -base64 32
+#
+# 本番環境（実際にCloudflareへデプロイする際）は、このファイルではなく
+# `wrangler secret put INTAKE_ENC_KEY` で設定する。
+
+INTAKE_ENC_KEY=ここに openssl rand -base64 32 で生成した値を貼り付ける

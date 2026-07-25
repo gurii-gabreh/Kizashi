@@ -1,0 +1,20 @@
+name = "kizashi-app"
+main = "worker/index.js"
+compatibility_date = "2025-01-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kizashi-app-local"
+# 実際にCloudflareアカウント上でD1データベースを作成した際に発行される
+# 本物のIDに差し替える必要がある（`wrangler d1 create kizashi-app-local`）。
+# ローカル開発（--local、このリポジトリでの検証はすべてこちら）ではこの値は
+# 使われないため、プレースホルダのままで問題ない。
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[triggers]
+# 毎日19:00 UTC（＝日本時間 翌4:00、負荷の低い時間帯）に事案の自動削除を実行
+crons = ["0 19 * * *"]

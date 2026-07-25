@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>きざし｜土砂災害現場支援</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c2126;
+    --ink-soft:#4b545c;
+    --paper:#f4f5f3;
+    --panel:#ffffff;
+    --line:#dcdfdc;
+    --action:#1f4e4a;
+    --action-dark:#163936;
+    --danger:#b3352a;
+    --danger-bg:#fbe9e7;
+    --warn:#c98a1f;
+    --warn-bg:#fdf3e0;
+    --safe:#2f6b52;
+    --safe-bg:#e8f2ec;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:"Noto Sans JP", -apple-system, BlinkMacSystemFont, sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--paper);display:flex;flex-direction:column;}
+
+  header.top{
+    padding:18px 18px 14px;
+    background:var(--action);
+    color:#fff;
+    position:sticky;top:0;z-index:1000;
+  }
+  header.top .eyebrow{
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    opacity:.72;font-weight:700;margin-bottom:4px;
+  }
+  header.top h1{margin:0;font-size:19px;font-weight:900;letter-spacing:.01em;}
+  header.top .room-tag{
+    display:inline-flex;align-items:center;gap:6px;
+    margin-top:10px;padding:6px 10px;border-radius:999px;
+    background:rgba(255,255,255,.14);font-size:12.5px;font-weight:500;
+  }
+  header.top .room-tag b{font-weight:900;letter-spacing:.06em;}
+  header.top .leave-link{
+    margin-top:8px;display:inline-block;font-size:11px;color:rgba(255,255,255,.72);
+    text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;
+  }
+
+  main{flex:1;padding:16px 16px 96px;}
+
+  .card{
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:var(--radius);padding:16px;margin-bottom:14px;
+  }
+  .card h2{
+    margin:0 0 10px;font-size:15px;font-weight:900;
+    display:flex;align-items:center;gap:8px;
+  }
+  .card h2 .num{
+    width:22px;height:22px;border-radius:7px;background:var(--action);
+    color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .note{font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin:0 0 10px;}
+  .note.mock{
+    background:#fff8e1;border:1px solid #e8d48a;color:#6b5a15;
+    padding:8px 10px;border-radius:8px;font-size:11.5px;
+  }
+  .note.error{
+    background:var(--danger-bg);border:1px solid #e3b3ab;color:#7a251c;
+    padding:8px 10px;border-radius:8px;font-size:12px;
+  }
+
+  #map{
+    width:100%;height:280px;border-radius:10px;overflow:hidden;
+    border:1px solid var(--line);
+  }
+  .legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;}
+  .legend span{font-size:11.5px;display:flex;align-items:center;gap:5px;color:var(--ink-soft);}
+  .legend i{width:11px;height:11px;border-radius:3px;display:inline-block;}
+
+  .zone-info{
+    margin-top:10px;padding:12px;border-radius:10px;font-size:13px;line-height:1.7;
+    display:none;
+  }
+  .zone-info.show{display:block;}
+  .zone-info.danger{background:var(--danger-bg);color:#7a251c;}
+  .zone-info.warn{background:var(--warn-bg);color:#7a5c14;}
+  .zone-info dt{font-weight:700;display:inline;}
+  .zone-info dd{display:inline;margin:0 10px 0 4px;}
+
+  .big-btn{
+    width:100%;padding:16px;border:none;border-radius:12px;
+    background:var(--action);color:#fff;font-size:15.5px;font-weight:700;
+    font-family:inherit;cursor:pointer;
+  }
+  .big-btn:active{background:var(--action-dark);}
+  .big-btn.outline{background:#fff;color:var(--action);border:1.5px solid var(--action);}
+  .big-btn.danger-btn{background:var(--danger);}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  .field{margin-bottom:12px;}
+  .field label{
+    display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);
+    margin-bottom:5px;
+  }
+  .field input, .field select, .field textarea{
+    width:100%;padding:11px 12px;border:1.5px solid var(--line);
+    border-radius:9px;font-size:14.5px;font-family:inherit;background:#fff;color:var(--ink);
+  }
+  .field textarea{resize:vertical;min-height:60px;}
+  .field.optional label::after{content:"（任意）";font-weight:400;color:#9aa1a6;}
+
+  .precursor-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .precursor-item{
+    border:1.5px solid var(--line);border-radius:10px;padding:12px 10px;
+    text-align:center;font-size:12.5px;line-height:1.4;cursor:pointer;
+    background:#fff;color:var(--ink-soft);font-weight:500;
+  }
+  .precursor-item.active{
+    border-color:var(--danger);background:var(--danger-bg);color:#7a251c;font-weight:700;
+  }
+
+  .feed-item{
+    border-left:3px solid var(--action);padding:8px 0 8px 12px;margin-bottom:10px;font-size:13px;
+  }
+  .feed-item .meta{font-size:11px;color:#9aa1a6;margin-top:2px;}
+
+  nav.tabs{
+    position:fixed;bottom:0;left:0;right:0;
+    background:#fff;border-top:1px solid var(--line);
+    display:flex;max-width:520px;margin:0 auto;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  nav.tabs button{
+    flex:1;border:none;background:none;padding:10px 4px 8px;
+    font-family:inherit;font-size:10.5px;font-weight:700;color:#9aa1a6;
+    display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;
+  }
+  nav.tabs button .ico{font-size:18px;}
+  nav.tabs button.active{color:var(--action);}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .status-pill{
+    display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;
+  }
+  .status-pill.ok{background:var(--safe-bg);color:var(--safe);}
+
+  #floorplanCanvas{
+    width:100%;height:auto;aspect-ratio:600/450;display:block;
+    border:1.5px solid var(--line);border-radius:10px;background:#fff;
+    touch-action:none;cursor:crosshair;
+  }
+  .floorplan-item{margin-bottom:14px;}
+  .floorplan-item img{width:100%;border:1px solid var(--line);border-radius:8px;background:#fff;display:block;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ ルーム作成・参加画面 ============ -->
+  <div id="entryScreen">
+    <header class="top">
+      <div class="eyebrow">きざし</div>
+      <h1>現場ルームへようこそ</h1>
+    </header>
+    <main>
+      <div class="card">
+        <h2>新しく現場ルームを作る</h2>
+        <p class="note">最初にこの現場に来た方は、新しいルームを作成してください。6桁の参加コードが発行されます。</p>
+        <button class="big-btn" id="createRoomBtn">現場ルームを作成する</button>
+      </div>
+      <div class="card">
+        <h2>既存のルームに参加する</h2>
+        <p class="note">家族や関係者から共有された6桁のコードを入力してください。</p>
+        <div class="field">
+          <label>参加コード</label>
+          <input type="text" id="joinCodeInput" inputmode="numeric" maxlength="6" placeholder="例：483920">
+        </div>
+        <button class="big-btn outline" id="joinRoomBtn">このコードで参加する</button>
+        <p class="note error" id="entryError" style="display:none;margin-top:10px"></p>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============ メインアプリ（ルーム参加後） ============ -->
+  <div id="mainApp" style="display:none">
+
+    <header class="top">
+      <div class="eyebrow">きざし</div>
+      <h1>きざし</h1>
+      <div class="room-tag">現場ルーム <b id="roomCode">------</b></div>
+      <br>
+      <button class="leave-link" id="leaveRoomBtn">別のルームに切り替える</button>
+    </header>
+
+    <main>
+
+      <!-- ============ 地図タブ ============ -->
+      <section class="view active" id="view-map">
+        <div class="card">
+          <h2><span class="num">1</span>危険エリアの確認</h2>
+          <p class="note">国土数値情報「土砂災害警戒区域データ」（東京都・令和4年度版）を使用しています。</p>
+          <div class="note mock" id="dataSourceNote">⚠ データを読み込み中です…</div>
+          <div id="map"></div>
+          <div class="legend">
+            <span><i style="background:#b3352a"></i>特別警戒区域</span>
+            <span><i style="background:#c98a1f"></i>警戒区域</span>
+            <span><i style="background:#2f6b52"></i>待機可能</span>
+          </div>
+          <div class="zone-info" id="zoneInfo"></div>
+          <p class="note" style="margin-top:10px">
+            最新の指定状況は東京都建設局「土砂災害警戒区域等マップ」でも確認できます。
+            <a href="https://d-keikai.metro.tokyo.lg.jp/" target="_blank" rel="noopener">別タブで開く ↗</a>
+            （同サイトはX-Frame-Options/CSPでiframe埋め込みを禁止しているため、リンク提示のみとしています）
+          </p>
+        </div>
+
+        <div class="card">
+          <h2><span class="num">2</span>気象警報の状況</h2>
+          <p class="note">気象庁防災情報XMLと同形式のサンプル表示。本番ではCloudflare Workers経由で定期取得します。</p>
+          <div class="feed-item">
+            <span class="status-pill ok">現在：発表なし</span>
+            <div class="meta">大雨警報（土砂災害）／土砂災害警戒情報　最終確認：サンプル表示</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 問診タブ ============ -->
+      <section class="view" id="view-intake">
+        <div class="card">
+          <h2><span class="num">3</span>事前問診フォーム</h2>
+          <p class="note">警察の「行方不明者届」標準項目に準拠。届出時に慌てず答えられるよう、事前に整理しておく下書きです。</p>
+
+          <div class="field"><label>氏名</label><input type="text" id="intakeName" placeholder="山田 太郎"></div>
+          <div class="grid2">
+            <div class="field"><label>年齢</label><input type="text" id="intakeAge" placeholder="72"></div>
+            <div class="field"><label>性別</label>
+              <select id="intakeGender">
+                <option value="">未選択</option>
+                <option value="男性">男性</option>
+                <option value="女性">女性</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label>最後に確認された場所・時刻</label><input type="text" id="intakeLastSeen" placeholder="例：〇〇町2丁目付近、7/18 18:30頃"></div>
+
+          <div class="field"><label>身長・体格</label><input type="text" id="intakeHeightBuild" placeholder="例：165cm、やせ型"></div>
+          <div class="field"><label>髪型・髪の色</label><input type="text" id="intakeHair" placeholder="例：白髪、短髪"></div>
+          <div class="field optional"><label>眼鏡の有無</label><input type="text" id="intakeGlasses" placeholder="例：黒縁眼鏡を着用"></div>
+          <div class="field"><label>最後に確認された時の服装</label><textarea id="intakeClothing" placeholder="例：グレーのジャケット、紺のズボン"></textarea></div>
+
+          <div class="field optional"><label>現在服用中の薬・アレルギー</label><textarea id="intakeMedication" placeholder="捜索・救助に直接必要な範囲のみ"></textarea></div>
+          <div class="field optional"><label>歩行・移動の可否</label><input type="text" id="intakeMobility" placeholder="例：杖を使用、自力歩行可"></div>
+          <div class="field optional">
+            <label>最近の写真</label>
+            <input type="file" id="intakePhotoInput" accept="image/*">
+            <img id="intakePhotoPreview" style="display:none;max-width:120px;margin-top:8px;border-radius:8px;border:1px solid var(--line)">
+          </div>
+
+          <button class="big-btn" id="intakeSaveBtn">この内容を現場ルームに保存</button>
+          <p class="note" style="margin-top:10px">保存内容は暗号化され、現場ルームコードを知る人のみ閲覧できます。事案終了後30日で自動削除されます。</p>
+        </div>
+      </section>
+
+      <!-- ============ 間取りタブ ============ -->
+      <section class="view" id="view-floorplan">
+        <div class="card">
+          <h2><span class="num">4</span>家の間取り 手書き共有</h2>
+          <p class="note">救助隊員に間取りを聞かれてから答えるのではなく、先回りして簡単な間取り図を描いて共有しておきましょう。マウスや指でなぞって描けます。</p>
+          <canvas id="floorplanCanvas" width="600" height="450"></canvas>
+          <div class="grid2" style="margin-top:10px">
+            <button class="big-btn outline" id="floorplanUndoBtn" type="button">元に戻す</button>
+            <button class="big-btn outline" id="floorplanClearBtn" type="button">消す</button>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>補足メモ</label>
+            <input type="text" id="floorplanNote" placeholder="例：2階の奥の部屋にいることが多い">
+          </div>
+          <button class="big-btn" id="floorplanShareBtn" style="margin-top:6px">この間取りを共有する</button>
+        </div>
+
+        <div class="card">
+          <h2><span class="num">5</span>共有済みの間取り</h2>
+          <div id="floorplanList" class="note">まだ共有されていません。</div>
+        </div>
+      </section>
+
+      <!-- ============ 前兆報告タブ ============ -->
+      <section class="view" id="view-precursor">
+        <div class="card">
+          <h2><span class="num">6</span>前兆現象の報告</h2>
+          <p class="note">
+            首相官邸「土砂災害から身を守るには」
+            （<a href="https://www.kantei.go.jp/jp/headline/bousai/doshyasaigai.html" target="_blank" rel="noopener">出典 ↗</a>）
+            に基づく前兆現象チェックリストです。気づいたものをタップしてください（予測ではなく、目撃情報の共有です）。
+          </p>
+          <div class="precursor-grid" id="precursorGrid">
+            <div class="precursor-item" data-label="がけの割れ目・ひび割れ">がけの割れ目<br>・ひび割れ</div>
+            <div class="precursor-item" data-label="がけからの湧き水">がけからの<br>湧き水</div>
+            <div class="precursor-item" data-label="川の急な濁り・流木">川の急な濁り<br>・流木</div>
+            <div class="precursor-item" data-label="川の水位の急な低下">川の水位の<br>急な低下</div>
+            <div class="precursor-item" data-label="山鳴り・地鳴り">山鳴り<br>・地鳴り</div>
+            <div class="precursor-item" data-label="小石が落ちてくる">小石が<br>落ちてくる</div>
+            <div class="precursor-item" data-label="異臭がする">異臭が<br>する</div>
+            <div class="precursor-item" data-label="樹木が傾く・裂ける音">樹木が傾く<br>・裂ける音</div>
+          </div>
+          <button class="big-btn danger-btn" style="margin-top:14px" id="reportBtn">この内容を現場全員に共有</button>
+        </div>
+
+        <div class="card">
+          <h2><span class="num">7</span>共有された前兆現象</h2>
+          <p class="note">現場の誰かが報告すると、ここに自動的に反映されます（10〜30秒ごとに更新）。</p>
+          <div id="feedList" class="note">まだ報告はありません。</div>
+        </div>
+      </section>
+
+    </main>
+
+    <nav class="tabs">
+      <button class="active" data-view="view-map"><span class="ico">🗺️</span>地図</button>
+      <button data-view="view-intake"><span class="ico">📋</span>事前問診</button>
+      <button data-view="view-floorplan"><span class="ico">✏️</span>間取り</button>
+      <button data-view="view-precursor"><span class="ico">⚠️</span>前兆報告</button>
+    </nav>
+
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="floorplan.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

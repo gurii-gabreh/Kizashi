@@ -21,11 +21,16 @@ export async function handlePostPrecursor(request, env, code) {
   const id = generateId();
   const latitude = typeof body.latitude === "number" ? body.latitude : null;
   const longitude = typeof body.longitude === "number" ? body.longitude : null;
+  // 危機感を伝えるUX（「〇〇さんの近くで報告がありました」）用。任意・匿名可。
+  const reporterName =
+    typeof body.reporter_name === "string" && body.reporter_name.trim()
+      ? body.reporter_name.trim().slice(0, 40)
+      : null;
 
   await env.DB.prepare(
-    "INSERT INTO precursor_signs (id, incident_id, sign_label, latitude, longitude) VALUES (?, ?, ?, ?, ?)"
+    "INSERT INTO precursor_signs (id, incident_id, sign_label, latitude, longitude, reporter_name) VALUES (?, ?, ?, ?, ?, ?)"
   )
-    .bind(id, room.id, body.sign_label, latitude, longitude)
+    .bind(id, room.id, body.sign_label, latitude, longitude, reporterName)
     .run();
 
   const row = await env.DB.prepare("SELECT reported_at FROM precursor_signs WHERE id = ?")
@@ -43,7 +48,7 @@ export async function handleGetPrecursors(request, env, code) {
   const since = url.searchParams.get("since");
 
   let query =
-    "SELECT id, sign_label, latitude, longitude, reported_at FROM precursor_signs WHERE incident_id = ?";
+    "SELECT id, sign_label, latitude, longitude, reported_at, reporter_name FROM precursor_signs WHERE incident_id = ?";
   const binds = [room.id];
   if (since) {
     query += " AND reported_at > ?";

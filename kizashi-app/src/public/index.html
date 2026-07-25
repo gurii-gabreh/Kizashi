@@ -136,6 +136,16 @@
     border-left:3px solid var(--action);padding:8px 0 8px 12px;margin-bottom:10px;font-size:13px;
   }
   .feed-item .meta{font-size:11px;color:#9aa1a6;margin-top:2px;}
+  .feed-item.alert{
+    border-left:4px solid var(--danger);background:var(--danger-bg);color:#7a251c;
+    padding:10px 12px;border-radius:8px;font-weight:500;
+  }
+  .feed-item.alert b{font-weight:900;}
+  .feed-item.alert.recent{animation:pulse-alert 1.6s ease-in-out 2;}
+  @keyframes pulse-alert{
+    0%,100%{box-shadow:0 0 0 0 rgba(179,53,42,.35);}
+    50%{box-shadow:0 0 0 6px rgba(179,53,42,0);}
+  }
 
   nav.tabs{
     position:fixed;bottom:0;left:0;right:0;
@@ -237,12 +247,36 @@
             <div class="meta">大雨警報（土砂災害）／土砂災害警戒情報　最終確認：サンプル表示</div>
           </div>
         </div>
+
+        <div class="card">
+          <h2><span class="num">3</span>過去の災害の記録（参考情報）</h2>
+          <p class="note">
+            首相官邸「土砂災害から身を守るには」
+            （<a href="https://www.kantei.go.jp/jp/headline/bousai/doshyasaigai.html" target="_blank" rel="noopener">出典 ↗</a>）
+            に掲載されている、実際の災害を経験した方々の証言記録です。
+            <b>現在の天候やこの地図上の区域と結びつけて危険度を判定するものではなく、
+            前兆現象への理解を深めるための一般的な参考情報</b>としてご覧ください。
+          </p>
+          <div class="note" style="background:#f4f5f3;border:1px solid var(--line);padding:10px 12px;border-radius:8px">
+            <b>前兆現象（出典ページより引用）</b>
+            <ul style="margin:8px 0 0;padding-left:18px;line-height:1.8">
+              <li>バケツをひっくり返したような雨であった</li>
+              <li>触ると痛いほどの雨であった</li>
+              <li>事前に、不気味な石のぶつかり合うゴロゴロ、ゴットンゴットンという腹にひびく音がしていた</li>
+              <li>直前では、川の水位が引くとともに、ゴーっという聞いたことのない音と泥の臭いがした</li>
+              <li>水がものすごく減った</li>
+              <li>堤防の下で流れてきた石があたってゴトゴトという音がした</li>
+              <li>山が鳴くような音がした</li>
+              <li>橋や堤防の流失直前には、泥臭い匂いとともに堤防が地響きしはじめ、水がうなるような音をたててきた</li>
+            </ul>
+          </div>
+        </div>
       </section>
 
       <!-- ============ 問診タブ ============ -->
       <section class="view" id="view-intake">
         <div class="card">
-          <h2><span class="num">3</span>事前問診フォーム</h2>
+          <h2><span class="num">4</span>事前問診フォーム</h2>
           <p class="note">警察の「行方不明者届」標準項目に準拠。届出時に慌てず答えられるよう、事前に整理しておく下書きです。</p>
 
           <div class="field"><label>氏名</label><input type="text" id="intakeName" placeholder="山田 太郎"></div>
@@ -274,12 +308,9 @@
           <button class="big-btn" id="intakeSaveBtn">この内容を現場ルームに保存</button>
           <p class="note" style="margin-top:10px">保存内容は暗号化され、現場ルームコードを知る人のみ閲覧できます。事案終了後30日で自動削除されます。</p>
         </div>
-      </section>
 
-      <!-- ============ 間取りタブ ============ -->
-      <section class="view" id="view-floorplan">
         <div class="card">
-          <h2><span class="num">4</span>家の間取り 手書き共有</h2>
+          <h2><span class="num">5</span>家の間取り 手書き共有</h2>
           <p class="note">救助隊員に間取りを聞かれてから答えるのではなく、先回りして簡単な間取り図を描いて共有しておきましょう。マウスや指でなぞって描けます。</p>
           <canvas id="floorplanCanvas" width="600" height="450"></canvas>
           <div class="grid2" style="margin-top:10px">
@@ -294,7 +325,7 @@
         </div>
 
         <div class="card">
-          <h2><span class="num">5</span>共有済みの間取り</h2>
+          <h2><span class="num">6</span>共有済みの間取り</h2>
           <div id="floorplanList" class="note">まだ共有されていません。</div>
         </div>
       </section>
@@ -302,12 +333,16 @@
       <!-- ============ 前兆報告タブ ============ -->
       <section class="view" id="view-precursor">
         <div class="card">
-          <h2><span class="num">6</span>前兆現象の報告</h2>
+          <h2><span class="num">7</span>前兆現象の報告</h2>
           <p class="note">
             首相官邸「土砂災害から身を守るには」
             （<a href="https://www.kantei.go.jp/jp/headline/bousai/doshyasaigai.html" target="_blank" rel="noopener">出典 ↗</a>）
             に基づく前兆現象チェックリストです。気づいたものをタップしてください（予測ではなく、目撃情報の共有です）。
           </p>
+          <div class="field optional">
+            <label>お名前</label>
+            <input type="text" id="precursorReporterName" placeholder="例：太郎（匿名でも報告できます）">
+          </div>
           <div class="precursor-grid" id="precursorGrid">
             <div class="precursor-item" data-label="がけの割れ目・ひび割れ">がけの割れ目<br>・ひび割れ</div>
             <div class="precursor-item" data-label="がけからの湧き水">がけからの<br>湧き水</div>
@@ -322,7 +357,7 @@
         </div>
 
         <div class="card">
-          <h2><span class="num">7</span>共有された前兆現象</h2>
+          <h2><span class="num">8</span>共有された前兆現象</h2>
           <p class="note">現場の誰かが報告すると、ここに自動的に反映されます（10〜30秒ごとに更新）。</p>
           <div id="feedList" class="note">まだ報告はありません。</div>
         </div>
@@ -332,8 +367,7 @@
 
     <nav class="tabs">
       <button class="active" data-view="view-map"><span class="ico">🗺️</span>地図</button>
-      <button data-view="view-intake"><span class="ico">📋</span>事前問診</button>
-      <button data-view="view-floorplan"><span class="ico">✏️</span>間取り</button>
+      <button data-view="view-intake"><span class="ico">📋</span>事前問診・間取り</button>
       <button data-view="view-precursor"><span class="ico">⚠️</span>前兆報告</button>
     </nav>
 

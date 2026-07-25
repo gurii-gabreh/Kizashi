@@ -23,18 +23,32 @@ npm run dev
 
 ```
 src/
-├── migrations/0001_init.sql   D1スキーマ（tools/d1-poc/schema.sqlを流用）
+├── migrations/
+│   ├── 0001_init.sql            D1スキーマ（tools/d1-poc/schema.sqlを流用）
+│   └── 0002_add_reporter_name.sql   前兆現象への報告者名追加
 ├── worker/
 │   ├── index.js                fetch()ルーター + scheduled()ハンドラ
 │   ├── routes/                  incidents / intake / floorplans / precursors
 │   ├── lib/                     roomAuth, crypto（AES-GCM）, db, json, precursorLabels
 │   └── scheduled/                purgeExpiredIncidents.js（30日自動削除）
 └── public/                      フロントエンド（バニラJS、フレームワーク不使用）
-    ├── index.html
-    ├── app.js                    ルーム作成/参加、API連携、ポーリング
+    ├── index.html                タブは「地図／事前問診・間取り／前兆報告」の3つ
+    ├── app.js                    ルーム作成/参加、API連携、ポーリング、地図への前兆マーカー表示
     ├── floorplan.js               Canvas手書きウィジェット
     └── data/                     地図データ（実データ、prototype/data/と同一）
 ```
+
+画面構成の補足：
+- 「事前問診」タブに間取り手書き共有を統合している（別タブに分けていない）
+- 「地図」タブに、実データのハザード地図に加えて、国交省・首相官邸の公式資料に
+  基づく「過去の災害の記録（参考情報）」カードがある。**現在の天候や特定区域と
+  結びつけて危険度を判定するものではなく、あくまで一般的な参考情報**という位置
+  づけを明記している（企画整理.md セクション5の「独自の予測・判定はしない」
+  という方針を守るため）
+- 前兆現象の報告には任意で報告者名を添えられ、一覧は「〇〇さんの近くで報告：
+  ○○」という呼びかけ形式で表示される（危機感を伝えるUX、企画整理.md
+  セクション4項目6）。位置情報が取得できた報告は、地図タブ上にも赤い
+  マーカーとして重ねて表示される
 
 ## APIエンドポイント
 

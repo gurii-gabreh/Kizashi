@@ -134,6 +134,8 @@ const sampleGeoJSON = {
   ],
 };
 
+let precursorLayerGroup = null;
+
 function initMap() {
   const map = L.map("map", { zoomControl: true, attributionControl: true }).setView([35.65, 139.7], 11);
   window.map = map;
@@ -142,6 +144,9 @@ function initMap() {
     attribution: "地図：国土地理院",
     maxZoom: 18,
   }).addTo(map);
+
+  // 前兆現象の報告地点（危険区域ポリゴンの上に重ねて表示する）
+  precursorLayerGroup = L.layerGroup().addTo(map);
 
   function styleFor(f) {
     const isSpecial = f.properties["区域区分"] === "土砂災害特別警戒区域";
@@ -191,6 +196,30 @@ function initMap() {
       renderZones(sampleGeoJSON);
       dataSourceNote.innerHTML = "⚠ 実データを読み込めなかったためサンプルデータを表示しています。";
     });
+}
+
+// 前兆現象の報告地点を、危険区域ポリゴンの上に赤いマーカーとして重ねて表示する。
+// 位置情報が取得できなかった報告（latitude/longitudeがnull）は地図には出さず、
+// 一覧（feedList）側にのみ表示される。
+function renderPrecursorMarkers(precursors) {
+  if (!precursorLayerGroup) return;
+  precursorLayerGroup.clearLayers();
+
+  for (const p of precursors) {
+    if (typeof p.latitude !== "number" || typeof p.longitude !== "number") continue;
+    const who = p.reporter_name ? `${escapeHtml(p.reporter_name)}さん` : "匿名の報告";
+    const marker = L.circleMarker([p.latitude, p.longitude], {
+      radius: 9,
+      color: "#ffffff",
+      weight: 2,
+      fillColor: "#b3352a",
+      fillOpacity: 0.9,
+    });
+    marker.bindPopup(
+      `<b>⚠️ 前兆現象の報告</b><br>${escapeHtml(p.sign_label)}<br><span style="color:#9aa1a6">${who}・${formatReportedAt(p.reported_at)}</span>`
+    );
+    marker.addTo(precursorLayerGroup);
+  }
 }
 
 // ---- 事前問診フォーム ----
@@ -338,34 +367,57 @@ function getGeolocation() {
   });
 }
 
+const REPORTER_NAME_KEY = "kizashi_reporter_name";
+const RECENT_REPORT_THRESHOLD_MS = 3 * 60 * 1000; // 3分以内の報告は「緊急」の強調表示にする
+
 function formatReportedAt(reportedAt) {
   // D1/SQLiteの "YYYY-MM-DD HH:MM:SS"（UTC）形式をJSTの時刻表示に変換する
   const iso = reportedAt.replace(" ", "T") + "Z";
   return new Date(iso).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
 }
 
+function reportedAtToDate(reportedAt) {
+  return new Date(reportedAt.replace(" ", "T") + "Z");
+}
+
+// 危機感を伝えるUX（企画整理.md セクション4 項目6）。抽象的な一覧表示ではなく、
+// 「〇〇さんの近くで報告がありました」という"誰かからの呼びかけ"の形で伝える。
+function precursorCallout(p) {
+  const who = p.reporter_name ? `${escapeHtml(p.reporter_name)}さん` : "現場の誰か";
+  return `<b>⚠️ ${who}の近くで報告：</b>「${escapeHtml(p.sign_label)}」`;
+}
+
 async function refreshPrecursors() {
   const res = await fetch(apiUrl("/precursors"));
   if (!res.ok) return;
   const data = await res.json();
+  const precursors = data.precursors || [];
+
   const feed = document.getElementById("feedList");
-  if (!data.precursors || data.precursors.length === 0) {
+  if (precursors.length === 0) {
     feed.className = "note";
     feed.textContent = "まだ報告はありません。";
-    return;
+  } else {
+    feed.className = "";
+    feed.innerHTML = "";
+    const now = Date.now();
+    for (const p of precursors) {
+      const isRecent = now - reportedAtToDate(p.reported_at).getTime() < RECENT_REPORT_THRESHOLD_MS;
+      const div = document.createElement("div");
+      div.className = "feed-item alert" + (isRecent ? " recent" : "");
+      div.innerHTML = `<div>${precursorCallout(p)}</div><div class="meta">${formatReportedAt(p.reported_at)}</div>`;
+      feed.appendChild(div);
+    }
   }
-  feed.className = "";
-  feed.innerHTML = "";
-  for (const p of data.precursors) {
-    const div = document.createElement("div");
-    div.className = "feed-item";
-    div.style.borderLeftColor = "var(--danger)";
-    div.innerHTML = `<div><b>前兆現象の報告：</b>${escapeHtml(p.sign_label)}</div><div class="meta">${formatReportedAt(p.reported_at)}</div>`;
-    feed.appendChild(div);
-  }
+
+  renderPrecursorMarkers(precursors);
 }
 
 function initPrecursorTab() {
+  const nameInput = document.getElementById("precursorReporterName");
+  const savedName = localStorage.getItem(REPORTER_NAME_KEY);
+  if (savedName) nameInput.value = savedName;
+
   document.querySelectorAll(".precursor-item").forEach((item) => {
     item.addEventListener("click", () => item.classList.toggle("active"));
   });
@@ -376,13 +428,15 @@ function initPrecursorTab() {
       alert("気づいた項目をタップしてから共有してください");
       return;
     }
+    const reporterName = nameInput.value.trim();
+    if (reporterName) localStorage.setItem(REPORTER_NAME_KEY, reporterName);
     const geo = await getGeolocation();
     await Promise.all(
       picked.map((label) =>
         fetch(apiUrl("/precursors"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sign_label: label, ...geo }),
+          body: JSON.stringify({ sign_label: label, reporter_name: reporterName || undefined, ...geo }),
         })
       )
     );

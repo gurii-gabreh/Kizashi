@@ -1,8 +1,13 @@
--- 企画整理.md セクション7「テーブル例」（incidents / family_intake / reports /
+-- 企画整理.md セクション7「テーブル例」（incidents / family_intake / floor_plans /
 -- precursor_signs）をもとにした、ローカルD1検証用のスキーマ案。
 -- 要配慮個人情報（family_intakeの身体的特徴等）を扱うため、
 -- セクション9の方針（暗号化保存・事案終了後の自動削除・現場ルームコードに
 -- よるアクセス制限）を前提とした設計にしている。
+--
+-- reports（誰が・どこを・いつ確認したか）は、救助隊側システムとの連携が前提と
+-- なり実現性が不確定なため「時間があれば追加」の付け足し案に格下げされた
+-- （企画整理.md 6-2直前の【時間があれば追加】参照）。主要機能ではないため、
+-- このスキーマからは外している。
 
 -- 現場ルーム。room_codeが「現場ルームコードによるアクセス制限」の単位になる。
 CREATE TABLE incidents (
@@ -24,14 +29,17 @@ CREATE TABLE family_intake (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- 「誰が」「どこを」「いつ確認したか」の確認記録。要配慮個人情報を含まないため平文でよい。
-CREATE TABLE reports (
+-- 家の間取り 手書き共有（主機能）。救助隊員に間取りを聞かれてから答えるのではなく、
+-- 家族が待機中に先回りして簡易な間取り図を描いて現場ルームに共有しておく。
+-- Canvas上でのお絵描き結果をPNG画像として保存する（MVPではD1にBase64文字列で
+-- 格納。将来的にファイルサイズが問題になる場合はR2オブジェクトストレージに移す）。
+-- 要配慮個人情報ではないため暗号化は不要。
+CREATE TABLE floor_plans (
   id TEXT PRIMARY KEY,
   incident_id TEXT NOT NULL REFERENCES incidents(id),
-  reporter_name TEXT NOT NULL,
-  location TEXT NOT NULL,
-  note TEXT,
-  reported_at TEXT NOT NULL DEFAULT (datetime('now'))
+  image_data TEXT NOT NULL,         -- "data:image/png;base64,...." 形式
+  note TEXT,                        -- 補足メモ（任意）
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 -- 前兆現象の目撃報告（国交省公式チェックリストに基づく）。
@@ -45,5 +53,5 @@ CREATE TABLE precursor_signs (
 );
 
 CREATE INDEX idx_family_intake_incident ON family_intake(incident_id);
-CREATE INDEX idx_reports_incident ON reports(incident_id);
+CREATE INDEX idx_floor_plans_incident ON floor_plans(incident_id);
 CREATE INDEX idx_precursor_signs_incident ON precursor_signs(incident_id);

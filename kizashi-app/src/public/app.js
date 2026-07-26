@@ -305,11 +305,30 @@ async function refreshFloorplanList() {
   for (const fp of data.floorplans) {
     const wrap = document.createElement("div");
     wrap.className = "floorplan-item";
-    wrap.innerHTML = `
-      <img src="${fp.image_data}" alt="間取り図">
-      ${fp.note ? `<div class="note" style="margin-top:4px">${escapeHtml(fp.note)}</div>` : ""}
-      <div class="meta" style="font-size:11px;color:#9aa1a6">${escapeHtml(fp.created_at)}</div>
-    `;
+
+    // image_data はHTMLとして解釈させず、DOM APIでプロパティとして設定する
+    // （innerHTML中の属性値展開はXSSにつながるため使わない。サーバー側でも
+    // data:image/...;base64,... 形式のみを許可するよう検証している）。
+    const img = document.createElement("img");
+    img.src = fp.image_data;
+    img.alt = "間取り図";
+    wrap.appendChild(img);
+
+    if (fp.note) {
+      const noteDiv = document.createElement("div");
+      noteDiv.className = "note";
+      noteDiv.style.marginTop = "4px";
+      noteDiv.textContent = fp.note;
+      wrap.appendChild(noteDiv);
+    }
+
+    const metaDiv = document.createElement("div");
+    metaDiv.className = "meta";
+    metaDiv.style.fontSize = "11px";
+    metaDiv.style.color = "#9aa1a6";
+    metaDiv.textContent = fp.created_at;
+    wrap.appendChild(metaDiv);
+
     list.appendChild(wrap);
   }
 }

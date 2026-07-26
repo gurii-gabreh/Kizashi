@@ -2,9 +2,12 @@ export function generateId() {
   return crypto.randomUUID();
 }
 
-// 6桁の数字コード（現場ルームの参加コード）。先頭0埋めを含む。
+// 6桁の数字コード（現場ルームの参加コード＝唯一のアクセス制御）。先頭0埋めを含む。
+// これはセキュリティトークンとして機能するため、Math.random()（暗号論的に
+// 安全でない）ではなく、暗号化にも使っているcrypto.getRandomValues()で
+// 生成する。
 export function generateRoomCode() {
-  const n = Math.floor(Math.random() * 1_000_000);
+  const n = crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000;
   return String(n).padStart(6, "0");
 }
 

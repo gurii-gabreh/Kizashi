@@ -1,4 +1,4 @@
-# きざし本体（Cloudflare Workers + D1）
+# 結（Yui）本体（Cloudflare Workers + D1）
 
 現場ルーム・事前問診フォーム・家の間取り手書き共有・前兆現象共有の実装。
 単一のCloudflare Worker（静的アセット配信＋API）として構成している。

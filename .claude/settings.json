@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Code_Remote__register_repo_root",
+      "mcp__Google_Drive__read_file_content",
+      "mcp__Claude_Code_Remote__list_repos"
+    ]
+  }
+}

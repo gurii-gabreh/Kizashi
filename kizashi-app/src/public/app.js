@@ -7,6 +7,8 @@ const PRECURSOR_POLL_INTERVAL_MS = 15000; // 10〜30秒ごとのポーリング�
 const state = {
   roomCode: null,
   precursorTimer: null,
+  voiceIntakeWidget: null,
+  chatWidget: null,
 };
 
 function apiUrl(path) {
@@ -51,6 +53,12 @@ function showEntryScreen() {
   if (state.precursorTimer) {
     clearInterval(state.precursorTimer);
     state.precursorTimer = null;
+  }
+  if (state.voiceIntakeWidget) {
+    state.voiceIntakeWidget.stop();
+  }
+  if (state.chatWidget) {
+    state.chatWidget.reset();
   }
 }
 
@@ -286,6 +294,40 @@ function initIntakeForm() {
   });
 }
 
+// ---- 音声ガイド付き事前問診 ----
+
+function initVoiceIntake() {
+  if (!isVoiceIntakeSupported()) return; // ボタンはHTML側でデフォルト非表示のまま
+
+  const widget = initVoiceIntakeWidget({
+    overlayId: "voiceIntakeOverlay",
+    questionTextId: "voiceIntakeQuestion",
+    progressId: "voiceIntakeProgress",
+    statusId: "voiceIntakeStatus",
+    transcriptId: "voiceIntakeTranscript",
+    choicesId: "voiceIntakeChoices",
+    cancelBtnId: "voiceIntakeCancelBtn",
+    onFieldConfirmed: (fieldId, value) => {
+      const el = document.getElementById(fieldId);
+      if (el) el.value = value;
+    },
+  });
+  state.voiceIntakeWidget = widget;
+
+  document.getElementById("voiceIntakeCard").style.display = "";
+  document.getElementById("voiceIntakeStartBtn").addEventListener("click", () => widget.start());
+}
+
+// ---- 傾聴AIチャット ----
+
+function initChat() {
+  state.chatWidget = initChatWidget({
+    inputId: "chatInput",
+    sendBtnId: "chatSendBtn",
+    messagesId: "chatMessages",
+  });
+}
+
 // ---- 家の間取り 手書き共有 ----
 
 let floorplanWidget = null;
@@ -472,10 +514,12 @@ function initPrecursorTab() {
 function initMainApp() {
   initMap();
   initIntakeForm();
+  initVoiceIntake();
   loadIntake();
   initFloorplanTab();
   refreshFloorplanList();
   initPrecursorTab();
+  initChat();
 }
 
 // ---- 起動時：保存済みのルームコードがあれば自動的に再参加を試みる ----

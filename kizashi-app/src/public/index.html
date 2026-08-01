@@ -176,6 +176,53 @@
   }
   .floorplan-item{margin-bottom:14px;}
   .floorplan-item img{width:100%;border:1px solid var(--line);border-radius:8px;background:#fff;display:block;}
+
+  /* 音声ガイド付き事前問診 */
+  .voice-overlay{
+    position:fixed;inset:0;z-index:2000;background:rgba(28,33,38,.92);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .voice-overlay-inner{
+    background:#fff;border-radius:16px;padding:22px 20px;max-width:440px;width:100%;
+    max-height:86vh;overflow-y:auto;
+  }
+  .voice-progress{font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:8px;}
+  .voice-question{font-size:17px;font-weight:900;line-height:1.5;margin-bottom:10px;}
+  .voice-status{font-size:13px;color:var(--action);min-height:18px;margin-bottom:10px;}
+  .voice-transcript{
+    background:var(--paper);border:1.5px solid var(--line);border-radius:10px;
+    padding:12px;min-height:20px;font-size:15px;line-height:1.6;margin-bottom:14px;
+  }
+  .voice-choices{display:flex;flex-direction:column;gap:8px;}
+  .voice-cancel{
+    display:block;width:100%;margin-top:16px;background:none;border:none;
+    color:var(--ink-soft);font-size:12px;text-decoration:underline;cursor:pointer;
+    font-family:inherit;padding:6px;
+  }
+
+  /* 傾聴AIチャット */
+  .chat-disclaimer{
+    background:var(--warn-bg);border:1px solid #e8d48a;color:#6b5a15;
+    padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.6;margin-bottom:12px;
+  }
+  .chat-messages{
+    display:flex;flex-direction:column;gap:10px;max-height:50vh;overflow-y:auto;
+    padding:4px 2px;margin-bottom:12px;
+  }
+  .chat-bubble{
+    max-width:80%;padding:10px 13px;border-radius:14px;font-size:14px;line-height:1.6;
+    white-space:pre-wrap;word-break:break-word;
+  }
+  .chat-bubble-user{
+    align-self:flex-end;background:var(--action);color:#fff;border-bottom-right-radius:4px;
+  }
+  .chat-bubble-ai{
+    align-self:flex-start;background:var(--paper);border:1px solid var(--line);
+    color:var(--ink);border-bottom-left-radius:4px;
+  }
+  .chat-input-row{display:flex;gap:8px;}
+  .chat-input-row input{flex:1;}
+  .chat-input-row button{width:auto;padding:11px 18px;}
 </style>
 </head>
 <body>
@@ -275,8 +322,14 @@
 
       <!-- ============ 問診タブ ============ -->
       <section class="view" id="view-intake">
+        <div class="card" id="voiceIntakeCard" style="display:none">
+          <h2><span class="num">4</span>音声で入力する</h2>
+          <p class="note">文字入力が難しい状況でも、話しかけるだけで下の問診フォームに入力できます。話した内容はそのまま文字にして表示し、必ず確認してから次に進みます。</p>
+          <button class="big-btn outline" id="voiceIntakeStartBtn" type="button">🎤 音声で入力を始める</button>
+        </div>
+
         <div class="card">
-          <h2><span class="num">4</span>事前問診フォーム</h2>
+          <h2><span class="num">5</span>事前問診フォーム</h2>
           <p class="note">警察の「行方不明者届」標準項目に準拠。届出時に慌てず答えられるよう、事前に整理しておく下書きです。</p>
 
           <div class="field"><label>氏名</label><input type="text" id="intakeName" placeholder="山田 太郎"></div>
@@ -310,7 +363,7 @@
         </div>
 
         <div class="card">
-          <h2><span class="num">5</span>家の間取り 手書き共有</h2>
+          <h2><span class="num">6</span>家の間取り 手書き共有</h2>
           <p class="note">救助隊員に間取りを聞かれてから答えるのではなく、先回りして簡単な間取り図を描いて共有しておきましょう。マウスや指でなぞって描けます。</p>
           <canvas id="floorplanCanvas" width="600" height="450"></canvas>
           <div class="grid2" style="margin-top:10px">
@@ -325,7 +378,7 @@
         </div>
 
         <div class="card">
-          <h2><span class="num">6</span>共有済みの間取り</h2>
+          <h2><span class="num">7</span>共有済みの間取り</h2>
           <div id="floorplanList" class="note">まだ共有されていません。</div>
         </div>
       </section>
@@ -333,7 +386,7 @@
       <!-- ============ 前兆報告タブ ============ -->
       <section class="view" id="view-precursor">
         <div class="card">
-          <h2><span class="num">7</span>前兆現象の報告</h2>
+          <h2><span class="num">8</span>前兆現象の報告</h2>
           <p class="note">
             首相官邸「土砂災害から身を守るには」
             （<a href="https://www.kantei.go.jp/jp/headline/bousai/doshyasaigai.html" target="_blank" rel="noopener">出典 ↗</a>）
@@ -357,9 +410,26 @@
         </div>
 
         <div class="card">
-          <h2><span class="num">8</span>共有された前兆現象</h2>
+          <h2><span class="num">9</span>共有された前兆現象</h2>
           <p class="note">現場の誰かが報告すると、ここに自動的に反映されます（10〜30秒ごとに更新）。</p>
           <div id="feedList" class="note">まだ報告はありません。</div>
+        </div>
+      </section>
+
+      <!-- ============ そっと話すタブ（傾聴AIチャット） ============ -->
+      <section class="view" id="view-chat">
+        <div class="card">
+          <h2><span class="num">10</span>そっと話す</h2>
+          <div class="chat-disclaimer">
+            AIによる会話です。内容が不正確な場合があります。助言や判断は行わず、
+            話を聴くことに限定しています。命に関わる緊急時は119番・110番へ
+            直接連絡してください。
+          </div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="今のお気持ちを、そのまま書いてください">
+            <button class="big-btn" id="chatSendBtn" type="button">送る</button>
+          </div>
         </div>
       </section>
 
@@ -369,14 +439,29 @@
       <button class="active" data-view="view-map"><span class="ico">🗺️</span>地図</button>
       <button data-view="view-intake"><span class="ico">📋</span>事前問診・間取り</button>
       <button data-view="view-precursor"><span class="ico">⚠️</span>前兆報告</button>
+      <button data-view="view-chat"><span class="ico">💬</span>そっと話す</button>
     </nav>
 
   </div>
 
 </div>
 
+<!-- 音声ガイド付き事前問診のオーバーレイ -->
+<div class="voice-overlay" id="voiceIntakeOverlay" style="display:none">
+  <div class="voice-overlay-inner">
+    <div class="voice-progress" id="voiceIntakeProgress"></div>
+    <div class="voice-question" id="voiceIntakeQuestion"></div>
+    <div class="voice-status" id="voiceIntakeStatus"></div>
+    <div class="voice-transcript" id="voiceIntakeTranscript"></div>
+    <div class="voice-choices" id="voiceIntakeChoices"></div>
+    <button class="voice-cancel" id="voiceIntakeCancelBtn" type="button">中止して手入力に戻る</button>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="floorplan.js"></script>
+<script src="voiceIntake.js"></script>
+<script src="chat.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

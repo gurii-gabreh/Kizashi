@@ -3,9 +3,10 @@ import { handleCreateRoom, handleVerifyRoom, handleCloseRoom } from "./routes/in
 import { handleGetIntake, handlePostIntake } from "./routes/intake.js";
 import { handleGetFloorplans, handlePostFloorplan } from "./routes/floorplans.js";
 import { handleGetPrecursors, handlePostPrecursor } from "./routes/precursors.js";
+import { handlePostChat } from "./routes/chat.js";
 import { purgeExpiredIncidents } from "./scheduled/purgeExpiredIncidents.js";
 
-const ROOM_ROUTE = /^\/api\/rooms\/([^/]+)\/(verify|close|intake|floorplans|precursors)$/;
+const ROOM_ROUTE = /^\/api\/rooms\/([^/]+)\/(verify|close|intake|floorplans|precursors|chat)$/;
 
 export default {
   async fetch(request, env) {
@@ -33,6 +34,9 @@ export default {
           return await handleGetPrecursors(request, env, code);
         if (resource === "precursors" && method === "POST")
           return await handlePostPrecursor(request, env, code);
+        // chatはPOSTのみ（会話履歴をサーバー側に保存しないため、GETでの
+        // 取得エンドポイントは存在しない）
+        if (resource === "chat" && method === "POST") return await handlePostChat(request, env, code);
         return errorResponse("Method not allowed", 405);
       }
 

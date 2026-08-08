@@ -41,7 +41,7 @@
 - **フロントエンド**：HTML/CSS/JavaScript、地図はLeaflet.js＋国土地理院タイル（無料・APIキー不要）
 - **バックエンド**：Cloudflare Workers + D1（無料枠）
 - **通知**：Web Push通知、または LINE Messaging API（無料枠）
-- **東京都データ**：国土数値情報「土砂災害警戒区域データ」（GeoJSON形式）
+- **東京都データ**：東京都建設局河川部「東京都土砂災害危険度情報関連データ」（Shpファイル、CC BY 4.0、2026-07-16更新分をGeoJSONへ変換・23区へ絞り込み・座標簡略化して利用。出典：東京都建設局河川部）
 - **気象庁データ**：防災情報XML（公式発表の表示・転載のみ、独自予報は行わない）
 
 費用は完全無料の範囲（Cloudflare Workers/D1/Pages、LINE Messaging APIの無料枠等）に収める方針です。
@@ -57,7 +57,7 @@ kizashi-app/
 │   └── 企画整理.md     企画の全体像・要件定義（技術検証結果も記載）
 ├── prototype/          UIプロトタイプ（Leaflet.js + 国土地理院タイル）
 │   ├── doshasai-prototype.html
-│   └── data/           実データ（国土数値情報 土砂災害警戒区域、23区・簡略化済み）
+│   └── data/           実データ（東京都建設局河川部 土砂災害危険度情報関連データ、23区・簡略化済み）
 ├── tools/              データ変換スクリプト（GML/GeoJSON → プロトタイプ用GeoJSON）
 └── src/                実装コード（Cloudflare Workers + D1）
     ├── worker/         APIルート・暗号化・自動削除ハンドラ

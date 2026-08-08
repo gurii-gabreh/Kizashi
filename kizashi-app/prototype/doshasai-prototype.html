@@ -167,7 +167,7 @@
     <section class="view active" id="view-map">
       <div class="card">
         <h2><span class="num">1</span>危険エリアの確認</h2>
-        <p class="note">国土数値情報「土砂災害警戒区域データ」（東京都・令和4年度版）を使用しています。</p>
+        <p class="note">出典：東京都建設局河川部「東京都土砂災害危険度情報関連データ」（クリエイティブ・コモンズ・ライセンス表示4.0国際、2026-07-16更新データを改変して使用）。区域図は誤差を含み、境界を確定するものではありません。最新の指定状況は<a href="https://www2.sabomap.jp/tokyo/" target="_blank" rel="noopener">東京都 土砂災害警戒区域等マップ</a>をご確認ください。</p>
         <div class="note mock" id="dataSourceNote">⚠ データを読み込み中です…</div>
         <div id="map"></div>
         <div class="legend">
@@ -380,7 +380,9 @@
     }).addTo(map);
   }
 
-  // 実データ（国土数値情報 A33-22、東京都23区、簡略化済み・約880KB）を読み込む。
+  // 実データ（東京都建設局河川部「東京都土砂災害危険度情報関連データ」、2026-07-16更新、
+  // 東京都23区、簡略化済み・約880KB）を読み込む。CC BY 4.0で公開されているデータを、
+  // 23区への絞り込み・座標の簡略化という形で改変して利用している。
   // file:// で直接開くとブラウザのCORS制限でfetchが失敗するため、その場合は
   // サンプルデータにフォールバックする（http(s)経由で配信すれば実データが表示される）。
   fetch('data/tokyo_23wards_sabo_zones.geojson')
@@ -388,7 +390,7 @@
     .then(geojson => {
       renderZones(geojson);
       dataSourceNote.className = 'note mock';
-      dataSourceNote.innerHTML = `✅ 実データを表示中：国土数値情報「土砂災害警戒区域データ」A33-22（東京都・令和4年度版）、23区内 ${geojson.features.length}件。座標は簡略化済み（元データ34MB→約880KB）。`;
+      dataSourceNote.innerHTML = `✅ 実データを表示中：東京都建設局河川部「東京都土砂災害危険度情報関連データ」（2026-07-16更新）、23区内 ${geojson.features.length}件。座標は簡略化済み（元データ改変・約880KB）。`;
     })
     .catch(err => {
       console.warn('実データの読み込みに失敗、サンプルデータを表示します:', err);

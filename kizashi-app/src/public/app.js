@@ -197,7 +197,7 @@ function initMap() {
     .then((geojson) => {
       renderZones(geojson);
       dataSourceNote.className = "note mock";
-      dataSourceNote.innerHTML = `✅ 実データを表示中：国土数値情報「土砂災害警戒区域データ」A33-22（東京都・令和4年度版）、23区内 ${geojson.features.length}件。`;
+      dataSourceNote.innerHTML = `✅ 実データを表示中：東京都建設局河川部「東京都土砂災害危険度情報関連データ」（2026-07-16更新）、23区内 ${geojson.features.length}件。`;
     })
     .catch((err) => {
       console.warn("実データの読み込みに失敗、サンプルデータを表示します:", err);

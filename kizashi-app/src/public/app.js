@@ -145,13 +145,24 @@ const sampleGeoJSON = {
 let precursorLayerGroup = null;
 
 function initMap() {
-  const map = L.map("map", { zoomControl: true, attributionControl: true }).setView([35.65, 139.7], 11);
+  const map = L.map("map", {
+    zoomControl: true,
+    attributionControl: true,
+    minZoom: 10,
+    maxZoom: 14,
+  }).setView([35.68, 139.66], 11);
   window.map = map;
 
-  L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", {
-    attribution: "地図：国土地理院",
-    maxZoom: 18,
+  // 国土地理院タイルは使用せず、著作権・利用区分の確認が不要な自作のサンプル背景画像を
+  // 地理座標に貼り付けて表示する（2026-08-08、相談ルームでの方針決定。KIZ-019参照）。
+  const SAMPLE_BG_BOUNDS = [
+    [35.55, 139.55],
+    [35.8, 139.8],
+  ];
+  L.imageOverlay("assets/sample_map_bg.svg", SAMPLE_BG_BOUNDS, {
+    attribution: "背景：サンプル画像（実測地図データは使用していません）",
   }).addTo(map);
+  map.fitBounds(SAMPLE_BG_BOUNDS);
 
   // 前兆現象の報告地点（危険区域ポリゴンの上に重ねて表示する）
   precursorLayerGroup = L.layerGroup().addTo(map);

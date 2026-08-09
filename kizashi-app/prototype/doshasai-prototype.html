@@ -168,6 +168,7 @@
       <div class="card">
         <h2><span class="num">1</span>危険エリアの確認</h2>
         <p class="note">出典：東京都建設局河川部「東京都土砂災害危険度情報関連データ」（クリエイティブ・コモンズ・ライセンス表示4.0国際、2026-07-16更新データを改変して使用）。区域図は誤差を含み、境界を確定するものではありません。最新の指定状況は<a href="https://www2.sabomap.jp/tokyo/" target="_blank" rel="noopener">東京都 土砂災害警戒区域等マップ</a>をご確認ください。</p>
+        <p class="note">背景の地図画像はサンプルです（実在の地図データは使用していません）。危険エリアの位置関係を示す区域データ自体は上記の実データです。</p>
         <div class="note mock" id="dataSourceNote">⚠ データを読み込み中です…</div>
         <div id="map"></div>
         <div class="legend">
@@ -338,14 +339,22 @@
     ]
   };
 
-  const map = L.map('map', {zoomControl:true, attributionControl:true}).setView([35.65, 139.70], 11);
+  const map = L.map('map', {
+    zoomControl: true,
+    attributionControl: true,
+    crs: L.CRS.EPSG3857,
+    minZoom: 10,
+    maxZoom: 14
+  }).setView([35.68, 139.66], 11);
   window.map = map;
 
-  // 国土地理院タイル（無料・APIキー不要）
-  L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
-    attribution: '地図：国土地理院',
-    maxZoom: 18
+  // 国土地理院タイルは使用せず、著作権・利用区分の確認が不要な自作のサンプル背景画像を
+  // 地理座標に貼り付けて表示する（2026-08-08、相談ルームでの方針決定。KIZ-019参照）。
+  const SAMPLE_BG_BOUNDS = [[35.55, 139.55], [35.80, 139.80]];
+  L.imageOverlay('assets/sample_map_bg.svg', SAMPLE_BG_BOUNDS, {
+    attribution: '背景：サンプル画像（実測地図データは使用していません）'
   }).addTo(map);
+  map.fitBounds(SAMPLE_BG_BOUNDS);
 
   function styleFor(f){
     const isSpecial = f.properties['区域区分'] === '土砂災害特別警戒区域';

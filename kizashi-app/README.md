@@ -38,7 +38,7 @@
 
 ## 技術構成（予定）
 
-- **フロントエンド**：HTML/CSS/JavaScript、地図はLeaflet.js＋国土地理院タイル（無料・APIキー不要）
+- **フロントエンド**：HTML/CSS/JavaScript、地図はLeaflet.js＋自作のサンプル背景画像（国土地理院タイルは不使用。著作権・利用区分の確認が不要な設計。2026-08-08、KIZ-019参照）
 - **バックエンド**：Cloudflare Workers + D1（無料枠）
 - **通知**：Web Push通知、または LINE Messaging API（無料枠）
 - **東京都データ**：東京都建設局河川部「東京都土砂災害危険度情報関連データ」（Shpファイル、CC BY 4.0、2026-07-16更新分をGeoJSONへ変換・23区へ絞り込み・座標簡略化して利用。出典：東京都建設局河川部）
@@ -55,7 +55,7 @@ kizashi-app/
 ├── README.md          このファイル
 ├── docs/
 │   └── 企画整理.md     企画の全体像・要件定義（技術検証結果も記載）
-├── prototype/          UIプロトタイプ（Leaflet.js + 国土地理院タイル）
+├── prototype/          UIプロトタイプ（Leaflet.js + 自作サンプル背景画像）
 │   ├── doshasai-prototype.html
 │   └── data/           実データ（東京都建設局河川部 土砂災害危険度情報関連データ、23区・簡略化済み）
 ├── tools/              データ変換スクリプト（GML/GeoJSON → プロトタイプ用GeoJSON）

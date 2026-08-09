@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">
+  <defs>
+    <linearGradient id="land" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f3ede0"/>
+      <stop offset="100%" stop-color="#ece3d2"/>
+    </linearGradient>
+    <linearGradient id="bay" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#cfe3ee"/>
+      <stop offset="100%" stop-color="#b9d7e6"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#d9d0bd" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1000" height="1000" fill="url(#land)"/>
+  <rect width="1000" height="1000" fill="url(#grid)"/>
+
+  <!-- 東京湾を模した装飾的な水域（実測データではないサンプル表現） -->
+  <path d="M 1000,650 C 880,600 830,700 780,760 C 720,830 780,930 700,1000 L 1000,1000 Z" fill="url(#bay)" opacity="0.9"/>
+
+  <!-- 河川を模した装飾的な曲線（実測データではないサンプル表現） -->
+  <path d="M 120,60 C 250,220 300,380 420,470 C 560,580 620,700 650,900" fill="none" stroke="#a9c8da" stroke-width="6" opacity="0.55" stroke-linecap="round"/>
+  <path d="M 900,120 C 760,260 700,340 560,420 C 430,500 380,620 360,760" fill="none" stroke="#a9c8da" stroke-width="5" opacity="0.45" stroke-linecap="round"/>
+
+  <!-- 丘陵地帯を示す等高線風の装飾（実測データではないサンプル表現） -->
+  <g fill="none" stroke="#c8bb9e" stroke-width="2" opacity="0.5">
+    <ellipse cx="250" cy="300" rx="120" ry="80"/>
+    <ellipse cx="250" cy="300" rx="90" ry="60"/>
+    <ellipse cx="250" cy="300" rx="60" ry="40"/>
+    <ellipse cx="650" cy="230" rx="140" ry="90"/>
+    <ellipse cx="650" cy="230" rx="100" ry="64"/>
+  </g>
+
+  <text x="500" y="500" text-anchor="middle" font-family="sans-serif" font-size="26" fill="#9c927a" opacity="0.6">サンプル背景（地理院地図は使用していません）</text>
+</svg>

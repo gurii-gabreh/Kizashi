@@ -2,6 +2,7 @@
 
 都知事杯オープンデータ・ハッカソン2026向けの土砂災害現場支援アプリ(実装は`kizashi-app/`配下)。
 
+<!-- CORE-RULES:START (auto-synced from progress-tracker-dashboard/data/claude-core-rules.md -- do not edit by hand, edit the source instead) -->
 ## 最重要ルール(このファイルに直接記載。fetch不要で必ず読める)
 
 - このリポジトリは `gurii-gabreh/progress-tracker-dashboard` が進捗・実装ナレッジを一元管理する対象の1つ
@@ -14,3 +15,6 @@
 - https://raw.githubusercontent.com/gurii-gabreh/progress-tracker-dashboard/main/README.md
 - https://raw.githubusercontent.com/gurii-gabreh/progress-tracker-dashboard/main/data/policy.json
 - https://raw.githubusercontent.com/gurii-gabreh/progress-tracker-dashboard/main/data/ai-config.json
+<!-- CORE-RULES:END -->
+
+上記ブロックは`gurii-gabreh/progress-tracker-dashboard`の`data/claude-core-rules.md`が正本で、GitHub Actionsが自動同期する。直接編集しても次回同期で上書きされる。

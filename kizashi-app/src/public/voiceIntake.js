@@ -171,6 +171,78 @@ function initVoiceIntakeWidget({
     );
   }
 
+  // 自由記述項目用の確認。聞き取り間違いは「もう一度話す」（再度音声認識）だけでなく、
+  // その場でテキストを直接修正できるようにする（誤認識のたびに話し直すのは負担が大きいため）。
+  // 戻り値は { ok, value }。ok=falseなら呼び出し元は再度askQuestion()する。
+  function confirmTextValue(text) {
+    return speak(`「${text}」でよろしいですか？`).then(() => renderConfirmWithEdit(text));
+  }
+
+  function renderConfirmWithEdit(text) {
+    return new Promise((resolve) => {
+      choicesEl.innerHTML = "";
+
+      const yesBtn = document.createElement("button");
+      yesBtn.type = "button";
+      yesBtn.className = "big-btn";
+      yesBtn.textContent = "はい";
+      yesBtn.addEventListener("click", () => {
+        choicesEl.innerHTML = "";
+        resolve({ ok: true, value: text });
+      });
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "big-btn outline";
+      editBtn.textContent = "文字で修正する";
+      editBtn.addEventListener("click", () => resolve(renderEditInput(text)));
+
+      const retryBtn = document.createElement("button");
+      retryBtn.type = "button";
+      retryBtn.className = "big-btn outline";
+      retryBtn.textContent = "いいえ、もう一度話す";
+      retryBtn.addEventListener("click", () => {
+        choicesEl.innerHTML = "";
+        resolve({ ok: false });
+      });
+
+      choicesEl.appendChild(yesBtn);
+      choicesEl.appendChild(editBtn);
+      choicesEl.appendChild(retryBtn);
+    });
+  }
+
+  function renderEditInput(text) {
+    return new Promise((resolve) => {
+      choicesEl.innerHTML = "";
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "voice-edit-input";
+      input.value = text;
+
+      const confirmBtn = document.createElement("button");
+      confirmBtn.type = "button";
+      confirmBtn.className = "big-btn";
+      confirmBtn.textContent = "この内容で確定";
+      const submit = () => {
+        const edited = input.value.trim();
+        choicesEl.innerHTML = "";
+        showTranscript(edited || text);
+        resolve({ ok: true, value: edited || text });
+      };
+      confirmBtn.addEventListener("click", submit);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") submit();
+      });
+
+      choicesEl.appendChild(input);
+      choicesEl.appendChild(confirmBtn);
+      input.focus();
+      input.select();
+    });
+  }
+
   async function askQuestion(q) {
     if (!running) return null;
     setQuestionText(q.prompt);
@@ -215,10 +287,10 @@ function initVoiceIntakeWidget({
       return null;
     }
     showTranscript(transcript);
-    const ok = await confirmValue(transcript);
+    const result = await confirmTextValue(transcript);
     if (!running) return null;
-    if (!ok) return askQuestion(q);
-    return transcript;
+    if (!result.ok) return askQuestion(q);
+    return result.value;
   }
 
   async function start() {

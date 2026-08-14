@@ -112,6 +112,7 @@ function initTabs() {
       document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
       btn.classList.add("active");
       document.getElementById(btn.dataset.view).classList.add("active");
+      window.scrollTo(0, 0);
       if (btn.dataset.view === "view-map" && window.map) {
         setTimeout(() => window.map.invalidateSize(), 50);
       }

@@ -32,7 +32,11 @@
     color:var(--ink);
     -webkit-font-smoothing:antialiased;
   }
-  .app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--paper);display:flex;flex-direction:column;}
+  /* .appをdisplay:flexにしていると、直下の子であるheader.topのposition:stickyが
+     Safariで効かず、スクロール時にヘッダーが本文の後ろに埋もれてしまう既知の不具合が
+     ある(WebKitのflexアイテム+sticky問題)。.appは中央寄せの幅制限だけが目的なので、
+     flexをやめて通常のブロック要素に戻すことで回避する。 */
+  .app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--paper);}
 
   header.top{
     padding:18px 18px 14px;
@@ -56,7 +60,7 @@
     text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;
   }
 
-  main{flex:1;padding:16px 16px 96px;}
+  main{padding:16px 16px 96px;}
 
   .card{
     background:var(--panel);border:1px solid var(--line);
@@ -417,10 +421,10 @@
         </div>
       </section>
 
-      <!-- ============ そっと話すタブ（傾聴AIチャット） ============ -->
+      <!-- ============ AI相談タブ（傾聴AIチャット） ============ -->
       <section class="view" id="view-chat">
         <div class="card">
-          <h2><span class="num">10</span>そっと話す</h2>
+          <h2><span class="num">10</span>AI相談</h2>
           <div class="chat-disclaimer">
             AIによる会話です。内容が不正確な場合があります。助言や判断は行わず、
             話を聴くことに限定しています。命に関わる緊急時は119番・110番へ
@@ -440,7 +444,7 @@
       <button class="active" data-view="view-map"><span class="ico">🗺️</span>地図</button>
       <button data-view="view-intake"><span class="ico">📋</span>事前問診・間取り</button>
       <button data-view="view-precursor"><span class="ico">⚠️</span>前兆報告</button>
-      <button data-view="view-chat"><span class="ico">💬</span>そっと話す</button>
+      <button data-view="view-chat"><span class="ico">💬</span>AI相談</button>
     </nav>
 
   </div>

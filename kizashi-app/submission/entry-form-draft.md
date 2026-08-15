@@ -23,10 +23,7 @@
 
 1. 東京都建設局河川部「東京都土砂災害危険度情報関連データ」(CC BY 4.0、2026-07-16更新) / https://www2.sabomap.jp/tokyo/
 2. 東京都「土砂災害警戒区域等マップ」(参照リンクのみ、埋め込みなし) / https://d-keikai.metro.tokyo.lg.jp/
-3. 気象庁防災情報XML / http://xml.kishou.go.jp/index.html
-4. 気象庁「土砂キキクル」(参照リンクのみ、埋め込みなし) / https://www.jma.go.jp/jma/kishou/know/bosai/doshakeikai.html
-5. 首相官邸「土砂災害から身を守るには」 / https://www.kantei.go.jp/jp/headline/bousai/doshyasaigai.html
-6. 国土交通省砂防部「土砂災害から命を守るために」 / https://www.mlit.go.jp/river/sabo/pdf/miwomamorutameni.pdf
+3. 首相官邸「土砂災害から身を守るには」 / https://www.kantei.go.jp/jp/headline/bousai/doshyasaigai.html
 
 (各データソースの利用根拠の詳細は `kizashi-app/docs/data-usage-evidence.md` を参照)
 

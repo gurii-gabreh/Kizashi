@@ -1,12 +1,17 @@
 import { errorResponse } from "./lib/json.js";
 import { handleCreateRoom, handleVerifyRoom, handleCloseRoom } from "./routes/incidents.js";
 import { handleGetIntake, handlePostIntake } from "./routes/intake.js";
-import { handleGetFloorplans, handlePostFloorplan } from "./routes/floorplans.js";
+import {
+  handleGetFloorplans,
+  handlePostFloorplan,
+  handleUpdateFloorplan,
+} from "./routes/floorplans.js";
 import { handleGetPrecursors, handlePostPrecursor } from "./routes/precursors.js";
 import { handlePostChat } from "./routes/chat.js";
 import { purgeExpiredIncidents } from "./scheduled/purgeExpiredIncidents.js";
 
 const ROOM_ROUTE = /^\/api\/rooms\/([^/]+)\/(verify|close|intake|floorplans|precursors|chat)$/;
+const FLOORPLAN_ITEM_ROUTE = /^\/api\/rooms\/([^/]+)\/floorplans\/([^/]+)$/;
 
 export default {
   async fetch(request, env) {
@@ -17,6 +22,13 @@ export default {
     try {
       if (pathname === "/api/rooms" && method === "POST") {
         return await handleCreateRoom(request, env);
+      }
+
+      const itemMatch = pathname.match(FLOORPLAN_ITEM_ROUTE);
+      if (itemMatch) {
+        const [, code, id] = itemMatch;
+        if (method === "PUT") return await handleUpdateFloorplan(request, env, code, id);
+        return errorResponse("Method not allowed", 405);
       }
 
       const match = pathname.match(ROOM_ROUTE);

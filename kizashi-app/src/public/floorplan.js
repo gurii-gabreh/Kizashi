@@ -5,9 +5,13 @@ function initFloorplanWidget({ canvasId, undoBtnId, clearBtnId }) {
   const ctx = canvas.getContext("2d");
   let strokes = [];
   let currentStroke = null;
+  let backgroundImage = null; // 既存の間取りを編集する場合に読み込む元画像
 
   function redraw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (backgroundImage) {
+      ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    }
     ctx.strokeStyle = "#1c2126";
     ctx.lineWidth = 3;
     ctx.lineCap = "round";
@@ -60,11 +64,26 @@ function initFloorplanWidget({ canvasId, undoBtnId, clearBtnId }) {
   });
 
   return {
-    isEmpty: () => strokes.length === 0,
+    isEmpty: () => strokes.length === 0 && !backgroundImage,
     toDataUrl: () => canvas.toDataURL("image/png"),
     clear: () => {
       strokes = [];
+      backgroundImage = null;
       redraw();
     },
+    // 共有済みの間取り画像を背景として読み込み、上から描き直せるようにする
+    // （修正のたびに最初から描き直す必要をなくすため）。
+    loadBackground: (dataUrl) =>
+      new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          backgroundImage = img;
+          strokes = [];
+          redraw();
+          resolve();
+        };
+        img.onerror = reject;
+        img.src = dataUrl;
+      }),
   };
 }

@@ -343,6 +343,7 @@ function initChat() {
 // ---- 家の間取り 手書き共有 ----
 
 let floorplanWidget = null;
+let editingFloorplanId = null; // nullなら新規共有、idがあれば既存の間取りを修正中
 
 async function refreshFloorplanList() {
   const res = await fetch(apiUrl("/floorplans"));
@@ -383,8 +384,33 @@ async function refreshFloorplanList() {
     metaDiv.textContent = fp.created_at;
     wrap.appendChild(metaDiv);
 
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "big-btn outline";
+    editBtn.style.marginTop = "8px";
+    editBtn.textContent = "この間取りを修正する";
+    editBtn.addEventListener("click", () => startEditingFloorplan(fp));
+    wrap.appendChild(editBtn);
+
     list.appendChild(wrap);
   }
+}
+
+async function startEditingFloorplan(fp) {
+  await floorplanWidget.loadBackground(fp.image_data);
+  document.getElementById("floorplanNote").value = fp.note || "";
+  editingFloorplanId = fp.id;
+  document.getElementById("floorplanShareBtn").textContent = "修正を保存する";
+  document.getElementById("floorplanCancelEditBtn").style.display = "";
+  document.getElementById("floorplanCanvas").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function stopEditingFloorplan() {
+  editingFloorplanId = null;
+  floorplanWidget.clear();
+  document.getElementById("floorplanNote").value = "";
+  document.getElementById("floorplanShareBtn").textContent = "この間取りを共有する";
+  document.getElementById("floorplanCancelEditBtn").style.display = "none";
 }
 
 function initFloorplanTab() {
@@ -401,19 +427,29 @@ function initFloorplanTab() {
     }
     const image_data = floorplanWidget.toDataUrl();
     const note = document.getElementById("floorplanNote").value;
-    const res = await fetch(apiUrl("/floorplans"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image_data, note: note || undefined }),
-    });
+    const isEditing = !!editingFloorplanId;
+    const res = await fetch(
+      apiUrl(isEditing ? `/floorplans/${editingFloorplanId}` : "/floorplans"),
+      {
+        method: isEditing ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image_data, note: note || undefined }),
+      }
+    );
     if (!res.ok) {
-      alert("共有に失敗しました");
+      alert(isEditing ? "修正の保存に失敗しました" : "共有に失敗しました");
       return;
     }
-    floorplanWidget.clear();
-    document.getElementById("floorplanNote").value = "";
+    if (isEditing) {
+      stopEditingFloorplan();
+    } else {
+      floorplanWidget.clear();
+      document.getElementById("floorplanNote").value = "";
+    }
     await refreshFloorplanList();
   });
+
+  document.getElementById("floorplanCancelEditBtn").addEventListener("click", stopEditingFloorplan);
 }
 
 // ---- 前兆現象共有 ----

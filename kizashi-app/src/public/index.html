@@ -88,6 +88,10 @@
   #map{
     width:100%;height:280px;border-radius:10px;overflow:hidden;
     border:1px solid var(--line);
+    /* Leafletの拡大縮小ボタン等はposition:absoluteで描画されるため、
+       #map自体をposition基準にしないと、ページ最上部(ヘッダーの上)まで
+       はみ出して描画されてしまう。 */
+    position:relative;
   }
   .legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;}
   .legend span{font-size:11.5px;display:flex;align-items:center;gap:5px;color:var(--ink-soft);}

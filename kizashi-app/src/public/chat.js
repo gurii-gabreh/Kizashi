@@ -32,7 +32,7 @@ function initChatWidget({ inputId, sendBtnId, messagesId }) {
     (hotlines || []).forEach((h) => {
       const a = document.createElement("a");
       a.href = "tel:" + String(h.phone).replace(/-/g, "");
-      a.textContent = `${h.name}：${h.phone}`;
+      a.textContent = h.hours ? `${h.name}：${h.phone}（${h.hours}）` : `${h.name}：${h.phone}`;
       a.style.display = "block";
       a.style.marginTop = "6px";
       a.style.fontWeight = "700";

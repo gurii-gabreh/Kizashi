@@ -35,6 +35,34 @@ const STUB_REPLY =
   "［開発用スタブ応答］実際のAI応答はデプロイ後、Cloudflareアカウントに接続して確認してください。" +
   "このメッセージはenv.AIが利用できない環境（ローカル検証など）で返されています。";
 
+// ⚠️ デモ動画撮影専用のモック応答（このブランチはmainにマージしない）。
+// システムプロンプトの制約（助言・生存確率の予測をしない、共感に徹する）を
+// 満たす応答例を、キーワードに応じて返す。実際のAI呼び出しは行わない。
+const DEMO_SCRIPT = [
+  {
+    match: /(助かる|無事|生存|見つかる).*(と思い|でしょう|ですか|かな)/,
+    reply: "それは私には分かりません。今はまだ、はっきりしたことが言えない不安な時間だと思います。私はあなたの話を聴くことに専念させてください。",
+  },
+  {
+    match: /(不安|怖い|こわい|落ち着かない)/,
+    reply: "不安なお気持ち、よくわかります。今はまだ分からないことばかりで、落ち着かない時間ですよね。",
+  },
+  {
+    match: /(情けない|自分が|何もできない|無力)/,
+    reply: "今は待つことしかできない、そのつらさを一人で抱えなくて大丈夫です。ここにいる間は、いつでも話してくださいね。",
+  },
+  {
+    match: /(楽になり|ありがとう|少し話せて)/,
+    reply: "そう言っていただけて良かったです。また不安になったら、いつでも話しかけてください。",
+  },
+];
+const DEMO_FALLBACK_REPLY = "そうなんですね。もう少し、聞かせてもらえますか。";
+
+function demoMockReply(message) {
+  const hit = DEMO_SCRIPT.find((entry) => entry.match.test(message));
+  return hit ? hit.reply : DEMO_FALLBACK_REPLY;
+}
+
 function sanitizeHistory(history) {
   if (!Array.isArray(history)) return [];
   return history
@@ -74,8 +102,9 @@ export async function handlePostChat(request, env, code) {
 
   // 2) Workers AIバインディングが無い環境（ローカル検証等）はスタブ応答。
   //    UI配線・安全網の検証をCloudflareアカウント無しでも可能にするため。
+  //    （このブランチではデモ動画撮影用に、台本に沿った応答例を返す）
   if (!env.AI) {
-    return jsonResponse({ reply: STUB_REPLY, crisis: false, source: "stub" });
+    return jsonResponse({ reply: demoMockReply(message), crisis: false, source: "stub" });
   }
 
   try {

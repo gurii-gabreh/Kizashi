@@ -91,3 +91,19 @@ https://kizashi-app.yui-gurii.workers.dev
 **要確認: このリポジトリがPublic設定になっているか未確認。非公開のままだと
 審査員がアクセスできないため、記載前にPublic設定を確認・必要なら審査期間中
 だけ一時的にPublicにすること。**
+
+### 3-7. ハードウェアを含むプロダクト・サービスですか
+
+いいえ(純粋なWebアプリ、ハードウェア要素なし)
+
+### 3-8. デモの操作動画（URL）
+
+未入力でよい(3-3にデモURLを入力済みのため不要、と説明文に明記されている)
+
+### 4-1. 利用データ一覧
+
+1. 東京都建設局河川部「東京都土砂災害危険度情報関連データ」(CC BY 4.0、2026-07-16更新) ／ https://www2.sabomap.jp/tokyo/
+2. 東京都「土砂災害警戒区域等マップ」／ https://d-keikai.metro.tokyo.lg.jp/
+3. 首相官邸「土砂災害から身を守るには」／ https://www.kantei.go.jp/jp/headline/bousai/doshyasaigai.html
+
+(各データソースの利用根拠の詳細は `kizashi-app/docs/data-usage-evidence.md` を参照)

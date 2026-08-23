@@ -30,6 +30,21 @@
 10. 不明点や判断に迷ったことがあれば、どんな小さなことも必ず質問する。勝手に実装を進めない。疑問点については、必ず良い方針に進む案を提案する。
 11. 勝手に考えを変えて解釈しない。指示した内容に沿って回答・実装する。より良い案があれば随時提示するが、勝手な実装は禁止。
 12. 実装後は必ず確認テストを行い、ミスのない状態にしてから完了とする。複数ファイルにまたがる場合は、全体の疎通確認をした上で完了とする。
+13. 作業をする前に、下記URL先のナレッジを確認した上で、使えるナレッジがあれば活用すること。
+    - https://docs.google.com/spreadsheets/d/1a77zJ-ANsQmA7M4Bp2S4BYyDHkT-HzFa2UEy6eaN5jY/edit?gid=0#gid=0
+    - https://docs.google.com/spreadsheets/d/1riOPPhGryYlTzYhep51kpcaOUx5uJKFPI1cYjfnbECg/edit?usp=drivesdk
+    - https://docs.google.com/spreadsheets/d/1679CPPuWq4lciwe4BsJTfjJpiZKvKWogETwtauPThYw/edit?usp=drivesdk
+    - https://docs.google.com/spreadsheets/d/1pMTIWgWfPFEUkOh4V7KkDsSSYEeSlBDVNr9_zFxBm_o/edit?usp=drivesdk
+    - https://docs.google.com/spreadsheets/d/1VThcmRG6N-Ui-VmSzKdvLI8vOhfovWUqQsZb2rFJ3TY/edit?usp=drivesdk
+    - https://docs.google.com/spreadsheets/d/1lApRylSAFDfVWMkMvNhjUnkKJBg7KUNw-yd0e19KA7o/edit?usp=drivesdk
+    - https://docs.google.com/spreadsheets/d/1V4bbJTbWvg2e37x7iIFEPbpv4Vc5slelF2-EI6CgouA/edit?usp=drivesdk
+    - https://docs.google.com/spreadsheets/d/1GrR8vUc5A_C2Lo6C4Yrt_qqoN_gk6-M_Qw1WAuhp0ZI/edit?usp=drivesdk
+14. 回答・アウトプット・相談ごと・処理には、視認性のため通し番号やマーカーを付ける(2026-08-21追加)。
+    1. 質問への回答やアウトプットを出す場合は、【回答〇〇〇】(〇〇〇は3桁の通し番号、例: 【回答001】)を付けて示す。ユーザーが返信する際も、この番号を使って回答する。
+    2. マージしてよいか等、判断を仰ぐ相談ごとを出す場合は、【相談〇〇〇】(同じく3桁の通し番号、例: 【相談001】)を付けて示す。
+    3. 実装・調査など時間のかかる処理を行う場合は、着手時に【処理開始〇〇〇】、完了時に同じ番号で【処理完了〇〇〇】を示し、今どの段階かを分かりやすくする(番号は処理ごとの通し番号で、開始と完了は同じ番号を使う)。
+    4. 過去に自分から出した【相談〇〇〇】のうち、ユーザーからまだ回答・解決されていないものがある場合は、その回のやり取りで明示的に「【相談〇〇〇】は未解決です」のように報告する(放置して忘れさせない)。
+15. 改修時は、その場しのぎの案は絶対に出さないこと。全ての構成データを見直し、エラーが出なく、尚且つその後の更新も考えた改修案を考案すること。
 <!-- CORE-RULES:END -->
 
 上記ブロックは`gurii-gabreh/progress-tracker-dashboard`の`data/claude-core-rules.md`が正本で、GitHub Actionsが自動同期する。直接編集しても次回同期で上書きされる。
